@@ -98,7 +98,7 @@ export default function ClientsPage() {
               key={t}
               onClick={() => setTab(t)}
               className={
-                "relative py-3 text-[13px] font-semibold " +
+                "relative py-3 text-[14px] font-semibold " +
                 (tab === t ? "text-brand" : "text-ink-500 hover:text-ink-900")
               }
             >
@@ -120,19 +120,19 @@ export default function ClientsPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => downloadCsv(filtered)}
-              className="h-9 px-3 rounded border border-ink-300 bg-white text-ink-700 text-[13px] font-medium hover:bg-ink-50 inline-flex items-center gap-2"
+              className="h-9 px-3 rounded border border-ink-300 bg-white text-ink-700 text-[14px] font-medium hover:bg-ink-50 inline-flex items-center gap-2"
             >
               <Download className="h-4 w-4" /> Export
             </button>
             <button
               onClick={() => setShowMerge(true)}
-              className="h-9 px-3 rounded border border-ink-300 bg-white text-ink-700 text-[13px] font-medium hover:bg-ink-50 inline-flex items-center gap-2"
+              className="h-9 px-3 rounded border border-ink-300 bg-white text-ink-700 text-[14px] font-medium hover:bg-ink-50 inline-flex items-center gap-2"
             >
               <GitMerge className="h-4 w-4" /> Merge clients
             </button>
             <button
               onClick={() => setShowAdd(true)}
-              className="h-9 px-3 rounded bg-ink-900 text-white text-[13px] font-semibold hover:bg-black inline-flex items-center gap-2"
+              className="h-9 px-3 rounded bg-ink-900 text-white text-[14px] font-semibold hover:bg-black inline-flex items-center gap-2"
             >
               <Plus className="h-4 w-4" /> Add client
             </button>
@@ -147,7 +147,7 @@ export default function ClientsPage() {
         ) : (
           <div className="p-6 space-y-4">
             <div className="flex items-center gap-3 flex-wrap">
-              <div className="text-[13px] text-ink-700">
+              <div className="text-[14px] text-ink-700">
                 <span className="font-semibold text-ink-900">{liveCount.toLocaleString()}</span>{" "}
                 client{liveCount === 1 ? "" : "s"} in your directory
               </div>
@@ -166,7 +166,7 @@ export default function ClientsPage() {
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search name, phone, or email"
-                  className="w-72 h-9 pl-9 pr-3 rounded border border-ink-300 bg-white text-[13px] outline-none focus:border-brand"
+                  className="w-72 h-9 pl-9 pr-3 rounded border border-ink-300 bg-white text-[14px] outline-none focus:border-brand"
                 />
               </div>
             </div>

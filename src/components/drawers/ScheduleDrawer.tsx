@@ -30,7 +30,7 @@ export function ScheduleDrawer({
 
   return (
     <Drawer open={open} onClose={onClose} title={`Schedule — ${date}`} width="max-w-5xl">
-      <table className="w-full text-[13px]">
+      <table className="w-full text-[14px]">
         <thead className="sticky top-0 bg-ink-50 text-ink-500 uppercase text-[10px] tracking-wide">
           <tr>
             <Th>Time</Th>

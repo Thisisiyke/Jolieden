@@ -88,7 +88,7 @@ export default function FrontDeskPage() {
           >
             <div className="leading-tight">
               <div className="text-[10px] text-ink-500">{header.y}</div>
-              <div className="text-[13px] font-semibold text-ink-900 inline-flex items-center gap-1">
+              <div className="text-[14px] font-semibold text-ink-900 inline-flex items-center gap-1">
                 {header.dow}. {header.md}
                 <ChevronDown className="h-3 w-3" />
               </div>
@@ -107,7 +107,7 @@ export default function FrontDeskPage() {
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter clients"
-          className="flex-1 h-9 px-3 text-[13px] bg-transparent outline-none border-b border-stone-400 placeholder:text-stone-500 focus:border-brand"
+          className="flex-1 h-9 px-3 text-[14px] bg-transparent outline-none border-b border-stone-400 placeholder:text-stone-500 focus:border-brand"
         />
 
         <div className="relative">

@@ -24,7 +24,7 @@ export default async function ReportDetailPage({
 
         <div className="rounded-lg border border-ink-200 bg-white p-6">
           <div className="text-[20px] font-semibold text-ink-900">{r.name}</div>
-          <div className="text-[13px] text-ink-500 mt-1">{r.description}</div>
+          <div className="text-[14px] text-ink-500 mt-1">{r.description}</div>
           <div className="mt-4 flex flex-wrap gap-3 text-[12px] text-ink-700">
             <Stat label="Folder" value={r.folder} />
             <Stat label="Created by" value={r.createdBy} />
@@ -33,7 +33,7 @@ export default async function ReportDetailPage({
           </div>
         </div>
 
-        <div className="rounded-lg border border-ink-200 bg-white p-12 text-center text-ink-500 text-[13px]">
+        <div className="rounded-lg border border-ink-200 bg-white p-12 text-center text-ink-500 text-[14px]">
           Report detail view — table, charts, filters, and export controls
           render here. This is a prototype placeholder; wire data per report
           template.

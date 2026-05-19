@@ -37,7 +37,7 @@ export function BetaSidebar({
             key={f.id}
             onClick={() => onPick(f.id)}
             className={
-              "w-full flex items-center justify-between px-4 py-2 text-[13px] " +
+              "w-full flex items-center justify-between px-4 py-2 text-[14px] " +
               (active === f.id
                 ? "bg-brand/10 text-brand font-semibold"
                 : "text-ink-700 hover:bg-ink-50")
@@ -58,7 +58,7 @@ export function BetaSidebar({
               key={f}
               onClick={() => onPick(f)}
               className={
-                "w-full flex items-center gap-2 px-4 py-2 text-[13px] " +
+                "w-full flex items-center gap-2 px-4 py-2 text-[14px] " +
                 (active === f
                   ? "bg-brand/10 text-brand font-semibold"
                   : "text-ink-700 hover:bg-ink-50")

@@ -57,7 +57,7 @@ export function BlastWizard({
       <header className="h-14 px-5 flex items-center justify-between border-b border-ink-200 shrink-0 bg-white">
         <button
           onClick={exit}
-          className="text-[13px] text-ink-500 hover:text-brand inline-flex items-center gap-1"
+          className="text-[14px] text-ink-500 hover:text-brand inline-flex items-center gap-1"
         >
           <ChevronLeft className="h-4 w-4" /> Summary
         </button>
@@ -66,7 +66,7 @@ export function BlastWizard({
         </div>
         <button
           onClick={save}
-          className="h-9 px-4 rounded border border-ink-300 text-ink-700 text-[13px] font-medium hover:bg-ink-50"
+          className="h-9 px-4 rounded border border-ink-300 text-ink-700 text-[14px] font-medium hover:bg-ink-50"
         >
           Save and exit
         </button>
@@ -212,7 +212,7 @@ function Step1({
               onChange={(e) => setExcludeRecent(e.target.checked)}
               className="h-4 w-4 accent-[color:var(--brand)]"
             />
-            <span className="text-[13px] text-ink-700">
+            <span className="text-[14px] text-ink-700">
               Exclude clients who recently received email marketing
             </span>
           </label>
@@ -289,7 +289,7 @@ function Step2Email({
               <div className="text-[14px] text-ink-700 leading-relaxed">
                 Limited-time offer for our valued clients. Book your appointment by April 30 to lock in the discount.
               </div>
-              <button className="h-10 px-5 rounded bg-brand text-white text-[13px] font-semibold">
+              <button className="h-10 px-5 rounded bg-brand text-white text-[14px] font-semibold">
                 Book now
               </button>
               <div className="border-t border-ink-200 pt-4 text-[11px] text-ink-500">
@@ -343,7 +343,7 @@ function Step2Email({
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               placeholder="It's a cold seaso..."
-              className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px] outline-none focus:border-brand"
+              className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px] outline-none focus:border-brand"
             />
           </Field>
           <Field label={
@@ -354,7 +354,7 @@ function Step2Email({
             <input
               value={preview}
               onChange={(e) => setPreview(e.target.value)}
-              className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px] outline-none focus:border-brand"
+              className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px] outline-none focus:border-brand"
             />
           </Field>
           <div className="grid grid-cols-2 gap-2 text-[11px]">
@@ -371,10 +371,10 @@ function Step2Email({
             ✉ Send a test email
           </button>
           <div className="flex items-center justify-between pt-2 border-t border-ink-100">
-            <button onClick={onBack} className="h-9 px-3 text-[13px] text-ink-700 hover:text-brand inline-flex items-center gap-1">
+            <button onClick={onBack} className="h-9 px-3 text-[14px] text-ink-700 hover:text-brand inline-flex items-center gap-1">
               <ChevronLeft className="h-4 w-4" /> Go Back
             </button>
-            <button onClick={onNext} className="h-9 px-4 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700 inline-flex items-center gap-1">
+            <button onClick={onNext} className="h-9 px-4 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700 inline-flex items-center gap-1">
               Save and next <ChevronRight className="h-4 w-4" />
             </button>
           </div>
@@ -402,7 +402,7 @@ function Step2Text({
               maxLength={160}
               rows={5}
               placeholder="Hi {{first_name}} — book your spring color refresh!"
-              className="w-full p-2 rounded border border-ink-300 bg-white text-[13px] outline-none focus:border-brand resize-none"
+              className="w-full p-2 rounded border border-ink-300 bg-white text-[14px] outline-none focus:border-brand resize-none"
             />
           </Field>
           <div className="text-[11px] text-ink-500 text-right">
@@ -410,7 +410,7 @@ function Step2Text({
           </div>
         </div>
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="h-10 px-4 rounded border border-ink-300 text-[13px] text-ink-700 hover:bg-ink-50 inline-flex items-center gap-1">
+          <button onClick={onBack} className="h-10 px-4 rounded border border-ink-300 text-[14px] text-ink-700 hover:bg-ink-50 inline-flex items-center gap-1">
             <ChevronLeft className="h-4 w-4" /> Go Back
           </button>
           <button onClick={onNext} className="h-10 px-5 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700 inline-flex items-center gap-2">
@@ -456,17 +456,17 @@ function Step3({
           {when === "later" && (
             <div className="grid grid-cols-2 gap-3 pt-2">
               <Field label="Date">
-                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px]" />
+                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px]" />
               </Field>
               <Field label="Time">
-                <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px]" />
+                <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px]" />
               </Field>
             </div>
           )}
         </div>
 
         <div className="flex items-center justify-between">
-          <button onClick={onBack} className="h-10 px-4 rounded border border-ink-300 text-[13px] text-ink-700 hover:bg-ink-50 inline-flex items-center gap-1">
+          <button onClick={onBack} className="h-10 px-4 rounded border border-ink-300 text-[14px] text-ink-700 hover:bg-ink-50 inline-flex items-center gap-1">
             <ChevronLeft className="h-4 w-4" /> Go Back
           </button>
           <button onClick={onLaunch} className="h-10 px-5 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700">
@@ -483,7 +483,7 @@ function Choice({ label, active, onClick }: { label: string; active: boolean; on
     <button
       onClick={onClick}
       className={
-        "h-10 px-4 rounded border text-[13px] font-medium " +
+        "h-10 px-4 rounded border text-[14px] font-medium " +
         (active
           ? "border-brand bg-brand-50 text-brand"
           : "border-ink-300 bg-white text-ink-700 hover:bg-ink-50")
@@ -519,14 +519,14 @@ function ConfirmModal({ onYes, onNo }: { onYes: () => void; onNo: () => void }) 
     <div className="fixed inset-0 z-[60] bg-black/30 flex items-center justify-center">
       <div className="bg-white rounded-lg shadow-2xl w-full max-w-sm p-5">
         <div className="text-[15px] font-semibold text-ink-900">Confirm Navigation</div>
-        <div className="text-[13px] text-ink-700 mt-2">
+        <div className="text-[14px] text-ink-700 mt-2">
           Entered information will be lost. Continue?
         </div>
         <div className="flex justify-end gap-2 mt-4">
-          <button onClick={onNo} className="h-9 px-4 rounded border border-ink-300 text-[13px] text-ink-700 hover:bg-ink-50">
+          <button onClick={onNo} className="h-9 px-4 rounded border border-ink-300 text-[14px] text-ink-700 hover:bg-ink-50">
             NO
           </button>
-          <button onClick={onYes} className="h-9 px-4 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700">
+          <button onClick={onYes} className="h-9 px-4 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700">
             YES
           </button>
         </div>

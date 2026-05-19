@@ -40,7 +40,7 @@ export function JumpForwardDropdown({
             onJump(addDays(today, j.weeks * 7));
             onClose();
           }}
-          className="w-full text-left px-3 py-2 text-[13px] text-ink-900 hover:bg-ink-50"
+          className="w-full text-left px-3 py-2 text-[14px] text-ink-900 hover:bg-ink-50"
         >
           {j.label}
         </button>

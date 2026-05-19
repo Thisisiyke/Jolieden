@@ -15,9 +15,9 @@ export function WaitlistDrawer({
       <div className="px-5 py-3 border-b border-ink-200 flex items-center gap-3">
         <input
           placeholder="Filter waitlist…"
-          className="flex-1 h-9 px-3 rounded border border-ink-300 text-[13px] outline-none focus:border-brand"
+          className="flex-1 h-9 px-3 rounded border border-ink-300 text-[14px] outline-none focus:border-brand"
         />
-        <button className="h-9 px-3 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700 inline-flex items-center gap-1">
+        <button className="h-9 px-3 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700 inline-flex items-center gap-1">
           <Plus className="h-4 w-4" /> Add To Waitlist
         </button>
       </div>

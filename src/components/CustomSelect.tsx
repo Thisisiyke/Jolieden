@@ -33,7 +33,7 @@ export function CustomSelect({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-left text-[13px] flex items-center justify-between gap-1 outline-none focus:border-brand cursor-pointer"
+        className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-left text-[14px] flex items-center justify-between gap-1 outline-none focus:border-brand cursor-pointer"
       >
         <span className={selected ? "text-ink-900" : "text-ink-500"}>
           {selected?.label ?? placeholder}
@@ -51,7 +51,7 @@ export function CustomSelect({
                 onChange(o.value);
                 setOpen(false);
               }}
-              className="w-full text-left px-3 py-2 text-[13px] flex items-center justify-between hover:bg-ink-50"
+              className="w-full text-left px-3 py-2 text-[14px] flex items-center justify-between hover:bg-ink-50"
             >
               <span className={value === o.value ? "text-ink-900 font-medium" : "text-ink-700"}>
                 {o.label}

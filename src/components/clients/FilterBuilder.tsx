@@ -80,7 +80,7 @@ export function FilterBuilder({
     <div className="relative">
       <button
         onClick={() => onToggleOpen(!anchorOpen)}
-        className="h-9 px-3 rounded border border-ink-300 bg-white text-[13px] font-medium text-ink-700 hover:bg-ink-50 inline-flex items-center gap-2"
+        className="h-9 px-3 rounded border border-ink-300 bg-white text-[14px] font-medium text-ink-700 hover:bg-ink-50 inline-flex items-center gap-2"
       >
         <Filter className="h-3.5 w-3.5" />
         Add filter
@@ -131,7 +131,7 @@ export function FilterBuilder({
                     value={draft.value}
                     onChange={(e) => setDraft({ ...draft, value: e.target.value })}
                     placeholder="Value"
-                    className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px] outline-none focus:border-brand"
+                    className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px] outline-none focus:border-brand"
                   />
                 )}
               </div>
@@ -142,7 +142,7 @@ export function FilterBuilder({
                 onChange([...rules, { ...draft, id: `r${Date.now()}` }]);
                 setDraft({ id: "draft", field: "visits", op: ">=", value: "" });
               }}
-              className="h-9 px-3 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700 disabled:opacity-50 inline-flex items-center gap-1.5"
+              className="h-9 px-3 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700 disabled:opacity-50 inline-flex items-center gap-1.5"
             >
               <Plus className="h-3.5 w-3.5" /> Add rule
             </button>

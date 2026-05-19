@@ -30,19 +30,19 @@ export function AutomationSetup({
       width="max-w-md"
       footer={
         <div className="flex items-center justify-between">
-          <button onClick={onClose} className="h-9 px-3 rounded border border-ink-300 text-ink-700 text-[13px] hover:bg-ink-50">
+          <button onClick={onClose} className="h-9 px-3 rounded border border-ink-300 text-ink-700 text-[14px] hover:bg-ink-50">
             Cancel
           </button>
           <button
             onClick={() => onEnable({ channel, audience, copy })}
-            className="h-9 px-4 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700"
+            className="h-9 px-4 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700"
           >
             Enable automation
           </button>
         </div>
       }
     >
-      <div className="p-5 space-y-4 text-[13px]">
+      <div className="p-5 space-y-4 text-[14px]">
         <div className="text-ink-500">{description}</div>
 
         <Field label="Channel">
@@ -70,7 +70,7 @@ export function AutomationSetup({
             value={copy}
             onChange={(e) => setCopy(e.target.value)}
             rows={5}
-            className="w-full p-2 rounded border border-ink-300 bg-white text-[13px] outline-none focus:border-brand resize-none"
+            className="w-full p-2 rounded border border-ink-300 bg-white text-[14px] outline-none focus:border-brand resize-none"
           />
         </Field>
 

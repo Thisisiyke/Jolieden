@@ -32,7 +32,7 @@ export default function MessagesPage() {
               key={t}
               onClick={() => setTab(t)}
               className={
-                "py-2 text-[13px] font-medium relative " +
+                "py-2 text-[14px] font-medium relative " +
                 (tab === t ? "text-brand" : "text-ink-500")
               }
             >
@@ -59,7 +59,7 @@ export default function MessagesPage() {
               <Avatar name={c.name === "Unknown" ? "U N" : c.name} size={32} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[13px] font-semibold text-ink-900 truncate">
+                  <span className="text-[14px] font-semibold text-ink-900 truncate">
                     {c.name}
                   </span>
                   <span className="text-[11px] text-ink-500 shrink-0">
@@ -99,9 +99,9 @@ export default function MessagesPage() {
             <div className="border-t border-ink-200 p-3 flex items-center gap-2">
               <input
                 placeholder="Type a message…"
-                className="flex-1 h-10 px-3 rounded border border-ink-300 text-[13px] outline-none focus:border-brand"
+                className="flex-1 h-10 px-3 rounded border border-ink-300 text-[14px] outline-none focus:border-brand"
               />
-              <button className="h-10 px-4 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700">
+              <button className="h-10 px-4 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700">
                 Send
               </button>
             </div>
@@ -134,7 +134,7 @@ function Bubble({
     <div className={"flex " + (side === "me" ? "justify-end" : "justify-start")}>
       <div
         className={
-          "max-w-[60%] px-3 py-2 rounded-2xl text-[13px] " +
+          "max-w-[60%] px-3 py-2 rounded-2xl text-[14px] " +
           (side === "me"
             ? "bg-brand text-white rounded-br-sm"
             : "bg-white border border-ink-200 text-ink-900 rounded-bl-sm")

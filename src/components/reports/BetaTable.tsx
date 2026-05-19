@@ -92,7 +92,7 @@ export function BetaTable({
           />
         ))}
         {sorted.length === 0 && (
-          <div className="py-16 text-center text-ink-500 text-[13px]">
+          <div className="py-16 text-center text-ink-500 text-[14px]">
             No reports in this folder.
           </div>
         )}
@@ -146,7 +146,7 @@ function BulkBar({ count, onTrash, onClear }: { count: number; onTrash: () => vo
       <div className="col-span-1">
         <button onClick={onClear} className="h-5 w-5 rounded bg-white/20 text-white text-[12px]">×</button>
       </div>
-      <div className="col-span-9 text-[13px] font-semibold">{count} selected</div>
+      <div className="col-span-9 text-[14px] font-semibold">{count} selected</div>
       <div className="col-span-2 flex justify-end">
         <button
           onClick={onTrash}
@@ -190,11 +190,11 @@ function Row({
         />
       </div>
       <div className="col-span-3">
-        <Link href={`/reports/beta/${r.id}`} className="text-[13px] font-semibold text-ink-900 hover:text-brand">
+        <Link href={`/reports/beta/${r.id}`} className="text-[14px] font-semibold text-ink-900 hover:text-brand">
           {r.name}
         </Link>
       </div>
-      <div className="col-span-3 text-[13px] text-ink-700 truncate">{r.description}</div>
+      <div className="col-span-3 text-[14px] text-ink-700 truncate">{r.description}</div>
       <div className="col-span-1 text-[12px] text-ink-700 truncate">{r.folder}</div>
       <div className="col-span-1 text-[12px] text-ink-700 truncate">{r.createdBy}</div>
       <div className="col-span-1 text-[12px] text-ink-500">
@@ -230,7 +230,7 @@ function Row({
                   <button
                     key={it.label}
                     onClick={() => setMenuOpen(false)}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-ink-900 hover:bg-ink-50"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-[14px] text-ink-900 hover:bg-ink-50"
                   >
                     <it.icon className="h-3.5 w-3.5 text-ink-500" />
                     {it.label}
@@ -239,7 +239,7 @@ function Row({
                 <div className="border-t border-ink-100 my-1" />
                 <button
                   onClick={() => { onTrash(); setMenuOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-1.5 text-[13px] text-rose-600 hover:bg-rose-50"
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-[14px] text-rose-600 hover:bg-rose-50"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Move to trash

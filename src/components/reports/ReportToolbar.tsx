@@ -37,9 +37,9 @@ export function ReportToolbar({
           <input
             autoFocus
             placeholder="test@example.com"
-            className="h-9 px-3 w-56 rounded border border-stone-400 bg-white text-[13px] outline-none focus:border-brand"
+            className="h-9 px-3 w-56 rounded border border-stone-400 bg-white text-[14px] outline-none focus:border-brand"
           />
-          <button className="h-9 px-3 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700">
+          <button className="h-9 px-3 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700">
             Send
           </button>
           <button
@@ -80,7 +80,7 @@ export function ReportToolbar({
                   onExport(f);
                   setDownloadOpen(false);
                 }}
-                className="w-full text-left px-3 py-2 text-[13px] hover:bg-ink-50 text-ink-900 uppercase"
+                className="w-full text-left px-3 py-2 text-[14px] hover:bg-ink-50 text-ink-900 uppercase"
               >
                 {f}
               </button>

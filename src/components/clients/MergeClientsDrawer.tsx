@@ -60,7 +60,7 @@ export function MergeClientsDrawer({
               : `${selected.length} selected${primary ? " · primary set" : ""}`}
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => { reset(); onClose(); }} className="h-9 px-3 rounded border border-ink-300 text-ink-700 text-[13px] hover:bg-ink-50">
+            <button onClick={() => { reset(); onClose(); }} className="h-9 px-3 rounded border border-ink-300 text-ink-700 text-[14px] hover:bg-ink-50">
               Cancel
             </button>
             <button
@@ -71,7 +71,7 @@ export function MergeClientsDrawer({
                 reset();
                 onClose();
               }}
-              className="h-9 px-4 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700 disabled:opacity-50"
+              className="h-9 px-4 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700 disabled:opacity-50"
             >
               Merge into primary
             </button>
@@ -86,7 +86,7 @@ export function MergeClientsDrawer({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search by name, phone, or email"
-          className="w-full h-10 pl-9 pr-3 rounded border border-ink-300 bg-white text-[13px] outline-none focus:border-brand"
+          className="w-full h-10 pl-9 pr-3 rounded border border-ink-300 bg-white text-[14px] outline-none focus:border-brand"
         />
       </div>
       <div className="divide-y divide-ink-100">
@@ -109,7 +109,7 @@ export function MergeClientsDrawer({
               />
               <Avatar name={`${c.firstName} ${c.lastName}`} hue={c.avatarHue} />
               <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-medium text-ink-900 truncate">
+                <div className="text-[14px] font-medium text-ink-900 truncate">
                   {c.firstName} {c.lastName}
                 </div>
                 <div className="text-[11px] text-ink-500 truncate">
@@ -134,7 +134,7 @@ export function MergeClientsDrawer({
           );
         })}
         {filtered.length === 0 && (
-          <div className="py-16 text-center text-ink-500 text-[13px]">
+          <div className="py-16 text-center text-ink-500 text-[14px]">
             No matching clients.
           </div>
         )}

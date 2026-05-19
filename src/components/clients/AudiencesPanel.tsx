@@ -8,9 +8,9 @@ export function AudiencesPanel() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-[13px] text-ink-500">Saved client segments defined by filter rules</div>
+          <div className="text-[14px] text-ink-500">Saved client segments defined by filter rules</div>
         </div>
-        <button className="h-9 px-3 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700 inline-flex items-center gap-2">
+        <button className="h-9 px-3 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700 inline-flex items-center gap-2">
           <Plus className="h-4 w-4" /> New audience
         </button>
       </div>

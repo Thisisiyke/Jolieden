@@ -39,7 +39,7 @@ export function AddClientDrawer({
         <div className="flex items-center justify-end gap-2">
           <button
             onClick={() => { reset(); onClose(); }}
-            className="h-9 px-3 rounded border border-ink-300 text-ink-700 text-[13px] hover:bg-ink-50"
+            className="h-9 px-3 rounded border border-ink-300 text-ink-700 text-[14px] hover:bg-ink-50"
           >
             Cancel
           </button>
@@ -58,14 +58,14 @@ export function AddClientDrawer({
               });
               reset(); onClose();
             }}
-            className="h-9 px-4 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700 disabled:opacity-50"
+            className="h-9 px-4 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700 disabled:opacity-50"
           >
             Add client
           </button>
         </div>
       }
     >
-      <div className="p-5 space-y-3 text-[13px]">
+      <div className="p-5 space-y-3 text-[14px]">
         <div className="grid grid-cols-2 gap-3">
           <Field label="First name">
             <input value={first} onChange={(e) => setFirst(e.target.value)} className="w-full h-9 px-2 rounded border border-ink-300 bg-white outline-none focus:border-brand" />
@@ -123,7 +123,7 @@ function Check({ label, value, onChange }: { label: string; value: boolean; onCh
   return (
     <label className="flex items-center gap-2 cursor-pointer">
       <input type="checkbox" checked={value} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4 accent-[color:var(--brand)]" />
-      <span className="text-[13px] text-ink-700">{label}</span>
+      <span className="text-[14px] text-ink-700">{label}</span>
     </label>
   );
 }

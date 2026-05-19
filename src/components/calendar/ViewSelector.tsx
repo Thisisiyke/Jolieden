@@ -37,7 +37,7 @@ export function ViewSelector({
           disabled={v.locked}
           onClick={() => onClose()}
           className={
-            "w-full flex items-center justify-between px-3 py-2 text-[13px] " +
+            "w-full flex items-center justify-between px-3 py-2 text-[14px] " +
             (v.locked
               ? "text-ink-300 cursor-not-allowed"
               : "text-ink-900 hover:bg-ink-50")

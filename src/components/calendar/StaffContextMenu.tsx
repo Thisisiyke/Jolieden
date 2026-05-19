@@ -42,7 +42,7 @@ export function StaffContextMenu({
         <button
           key={it.label}
           onClick={onClose}
-          className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-ink-900 hover:bg-ink-50"
+          className="w-full flex items-center gap-2.5 px-3 py-2 text-[14px] text-ink-900 hover:bg-ink-50"
         >
           <it.icon className="h-4 w-4 text-ink-500" />
           {it.label}

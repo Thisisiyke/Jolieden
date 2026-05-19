@@ -6,12 +6,11 @@ import { usePathname } from "next/navigation";
 import {
   Search,
   Clock,
-  Bell,
   Settings,
-  ChevronDown,
-  UserCircle2,
 } from "lucide-react";
 import clsx from "clsx";
+import { NotificationsBell } from "./NotificationsBell";
+import { ProfileMenu } from "./profile/ProfileMenu";
 
 const NAV = [
   { href: "/", label: "Front Desk" },
@@ -62,7 +61,7 @@ export function TopNav() {
               key={item.href}
               href={item.href}
               className={clsx(
-                "relative h-full px-4 flex items-center text-[13px] font-medium gap-2",
+                "relative h-full px-4 flex items-center text-[14px] font-medium gap-2",
                 active ? "text-white" : "text-white/70 hover:text-white",
               )}
             >
@@ -82,53 +81,33 @@ export function TopNav() {
 
       {/* Right cluster */}
       <div className="flex items-center gap-1 pr-3">
-        <IconBtn label="Recent">
+        <Link
+          href="/timeclock"
+          aria-label="Time clock"
+          className="relative h-9 w-9 rounded-md text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center"
+        >
           <Clock className="h-5 w-5" />
-        </IconBtn>
-        <IconBtn label="Notifications" badge={100}>
-          <Bell className="h-5 w-5" />
-        </IconBtn>
-        <IconBtn label="Settings">
+        </Link>
+        <NotificationsBell />
+        <Link
+          href="/owner"
+          aria-label="Settings"
+          className="relative h-9 w-9 rounded-md text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center"
+        >
           <Settings className="h-5 w-5" />
-        </IconBtn>
+        </Link>
 
         {/* Workspace name sits between Settings and Profile */}
         <div className="leading-tight px-3 text-right">
-          <div className="text-[13px] font-semibold text-white">
+          <div className="text-[14px] font-semibold text-white">
             Jolieden&apos;s Beauty Bar
           </div>
           <div className="text-[11px] text-white/60">Frederick Douglass</div>
         </div>
 
-        <button className="ml-1 flex items-center gap-0.5 text-white/80 hover:text-white">
-          <UserCircle2 className="h-7 w-7" />
-          <ChevronDown className="h-4 w-4" />
-        </button>
+        <ProfileMenu />
       </div>
     </header>
   );
 }
 
-function IconBtn({
-  children,
-  label,
-  badge,
-}: {
-  children: React.ReactNode;
-  label: string;
-  badge?: number;
-}) {
-  return (
-    <button
-      aria-label={label}
-      className="relative h-9 w-9 rounded-md text-white/70 hover:text-white hover:bg-white/10 flex items-center justify-center"
-    >
-      {children}
-      {badge !== undefined && (
-        <span className="absolute -top-0.5 -right-0.5 rounded-full bg-white text-brand text-[9px] leading-none px-1 py-[3px] font-semibold min-w-[18px] text-center">
-          {badge}
-        </span>
-      )}
-    </button>
-  );
-}

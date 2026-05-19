@@ -101,12 +101,12 @@ export default function ReportsBetaPage() {
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search reports"
-                className="h-9 pl-9 pr-3 w-72 rounded border border-ink-300 bg-white text-[13px] outline-none focus:border-brand"
+                className="h-9 pl-9 pr-3 w-72 rounded border border-ink-300 bg-white text-[14px] outline-none focus:border-brand"
               />
             </div>
             <button
               onClick={addReport}
-              className="h-9 px-3 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700 inline-flex items-center gap-2"
+              className="h-9 px-3 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700 inline-flex items-center gap-2"
             >
               <Plus className="h-4 w-4" /> Add report
             </button>

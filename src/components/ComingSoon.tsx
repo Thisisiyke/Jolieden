@@ -6,7 +6,7 @@ export function ComingSoon({ title }: { title: string }) {
           {title[0]}
         </div>
         <h1 className="mt-4 text-[20px] font-semibold text-ink-900">{title}</h1>
-        <p className="mt-1 text-[13px] text-ink-500">
+        <p className="mt-1 text-[14px] text-ink-500">
           This area is part of the prototype scaffolding. Wire up real data and
           views here next.
         </p>

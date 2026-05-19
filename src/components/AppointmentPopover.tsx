@@ -79,7 +79,7 @@ export function AppointmentPopover({
     >
       <div className="px-4 pt-3 pb-2 flex items-start justify-between">
         <div>
-          <div className="text-brand font-semibold text-[13px] tracking-wide flex items-center gap-2">
+          <div className="text-brand font-semibold text-[14px] tracking-wide flex items-center gap-2">
             {appt.client.toUpperCase()}
             {appt.pronouns && (
               <span className="text-[10px] text-ink-500 font-normal">

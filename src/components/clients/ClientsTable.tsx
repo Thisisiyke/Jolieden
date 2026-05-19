@@ -21,7 +21,7 @@ export function ClientsTable({
 }) {
   return (
     <div className="rounded-lg border border-ink-200 bg-white overflow-hidden">
-      <table className="w-full text-[13px]">
+      <table className="w-full text-[14px]">
         <thead>
           <tr className="bg-ink-50 text-ink-500 uppercase text-[10px] tracking-wide">
             <ThSort
@@ -81,7 +81,7 @@ export function ClientsTable({
           ))}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={4} className="py-16 text-center text-ink-500 text-[13px]">
+              <td colSpan={4} className="py-16 text-center text-ink-500 text-[14px]">
                 No clients match the current filters.
               </td>
             </tr>

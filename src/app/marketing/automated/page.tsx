@@ -155,10 +155,10 @@ function Row({
             </button>
             {menuOpen && (
               <div className="absolute right-0 top-full mt-1 z-30 w-44 bg-white rounded-lg border border-ink-200 shadow-xl py-1">
-                <button onClick={() => { onEdit(); setMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-[13px] text-ink-900 hover:bg-ink-50">
+                <button onClick={() => { onEdit(); setMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-[14px] text-ink-900 hover:bg-ink-50">
                   Edit settings
                 </button>
-                <button onClick={() => { onPause(); setMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-[13px] text-amber-700 hover:bg-amber-50">
+                <button onClick={() => { onPause(); setMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-[14px] text-amber-700 hover:bg-amber-50">
                   Pause campaign
                 </button>
               </div>
@@ -168,7 +168,7 @@ function Row({
       ) : (
         <button
           onClick={onSetup}
-          className="h-9 px-4 rounded border border-stone-400 bg-white text-[13px] font-semibold text-ink-700 hover:bg-stone-100"
+          className="h-9 px-4 rounded border border-stone-400 bg-white text-[14px] font-semibold text-ink-700 hover:bg-stone-100"
         >
           {r.status === "paused" ? "Resume" : "Enable"}
         </button>
@@ -181,7 +181,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="text-right min-w-[88px]">
       <div className="text-[10px] uppercase font-bold tracking-wide text-ink-500">{label}</div>
-      <div className="text-[13px] font-semibold text-ink-900">{value}</div>
+      <div className="text-[14px] font-semibold text-ink-900">{value}</div>
     </div>
   );
 }
@@ -226,7 +226,7 @@ function PeriodPicker({
     <div ref={ref} className="relative">
       <button
         onClick={() => onToggle(!open)}
-        className="h-9 px-3 rounded border border-stone-400 bg-white text-[13px] font-medium text-ink-700 hover:bg-stone-100 inline-flex items-center gap-2"
+        className="h-9 px-3 rounded border border-stone-400 bg-white text-[14px] font-medium text-ink-700 hover:bg-stone-100 inline-flex items-center gap-2"
       >
         {fmt(period.start)} – {fmt(period.end)}
         <ChevronDown className="h-3 w-3" />
@@ -251,7 +251,7 @@ function PeriodPicker({
                 <input
                   type="date" value={draft.start}
                   onChange={(e) => setDraft({ ...draft, start: e.target.value })}
-                  className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px]"
+                  className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px]"
                 />
               </label>
               <label className="block">
@@ -259,7 +259,7 @@ function PeriodPicker({
                 <input
                   type="date" value={draft.end}
                   onChange={(e) => setDraft({ ...draft, end: e.target.value })}
-                  className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px]"
+                  className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px]"
                 />
               </label>
             </div>

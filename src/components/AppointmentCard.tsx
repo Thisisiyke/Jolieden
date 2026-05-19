@@ -35,7 +35,7 @@ export function AppointmentCard({
       <Avatar name={appt.client} hue={appt.avatarHue} />
       <div className="min-w-0 flex-1 leading-tight">
         <div className="text-[11px] text-ink-500">{timeText}</div>
-        <div className="text-[13px] font-semibold text-ink-900 truncate flex items-center gap-1">
+        <div className="text-[14px] font-semibold text-ink-900 truncate flex items-center gap-1">
           <span className="truncate">{appt.client}</span>
           {appt.pronouns && (
             <span className="text-[10px] font-normal text-ink-500">

@@ -150,7 +150,7 @@ export default function CalendarPage() {
           >
             <div className="leading-tight">
               <div className="text-[10px] text-ink-500">Today&apos;s Date</div>
-              <div className="text-[13px] font-semibold text-ink-900 inline-flex items-center gap-1">
+              <div className="text-[14px] font-semibold text-ink-900 inline-flex items-center gap-1">
                 {header.dow}. {header.md}
                 <ChevronDown className="h-3 w-3" />
               </div>

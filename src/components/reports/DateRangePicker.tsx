@@ -82,7 +82,7 @@ export function DateRangePicker({
           setCursor(parseISODate(start));
           setOpen((v) => !v);
         }}
-        className="h-9 px-3 rounded border border-stone-400 bg-white hover:bg-stone-100 text-[13px] font-medium text-ink-700 inline-flex items-center gap-2"
+        className="h-9 px-3 rounded border border-stone-400 bg-white hover:bg-stone-100 text-[14px] font-medium text-ink-700 inline-flex items-center gap-2"
       >
         📅 {display}
       </button>
@@ -100,7 +100,7 @@ export function DateRangePicker({
               </button>
               <div className="flex-1 grid grid-cols-2 text-center">
                 {months.map((m) => (
-                  <div key={m.toISOString()} className="text-[13px] font-semibold text-ink-900">
+                  <div key={m.toISOString()} className="text-[14px] font-semibold text-ink-900">
                     {m.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
                   </div>
                 ))}
@@ -152,7 +152,7 @@ export function DateRangePicker({
                 <input
                   value={draftStart ? fmtUS(draftStart) : ""}
                   readOnly
-                  className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px]"
+                  className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px]"
                 />
               </label>
               <label className="block">
@@ -160,7 +160,7 @@ export function DateRangePicker({
                 <input
                   value={draftEnd ? fmtUS(draftEnd) : ""}
                   readOnly
-                  className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px]"
+                  className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px]"
                 />
               </label>
             </div>

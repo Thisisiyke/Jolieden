@@ -65,7 +65,7 @@ export function NewAppointmentDrawer({
               reset();
               onClose();
             }}
-            className="h-9 px-3 rounded border border-ink-300 text-ink-700 text-[13px] hover:bg-ink-50"
+            className="h-9 px-3 rounded border border-ink-300 text-ink-700 text-[14px] hover:bg-ink-50"
           >
             Cancel
           </button>
@@ -87,7 +87,7 @@ export function NewAppointmentDrawer({
                 reset();
                 onClose();
               }}
-              className="h-9 px-4 rounded bg-brand text-white font-semibold text-[13px] hover:bg-brand-700 disabled:opacity-50"
+              className="h-9 px-4 rounded bg-brand text-white font-semibold text-[14px] hover:bg-brand-700 disabled:opacity-50"
             >
               Create appointment
             </button>
@@ -113,7 +113,7 @@ export function NewAppointmentDrawer({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name, phone, or email"
-              className="w-full h-10 pl-9 pr-3 rounded border border-ink-300 text-[13px] outline-none focus:border-brand"
+              className="w-full h-10 pl-9 pr-3 rounded border border-ink-300 text-[14px] outline-none focus:border-brand"
             />
           </div>
           <div className="mt-3 space-y-1">
@@ -128,7 +128,7 @@ export function NewAppointmentDrawer({
               >
                 <Avatar name={c.name} />
                 <div className="leading-tight min-w-0">
-                  <div className="text-[13px] font-medium text-ink-900 truncate">
+                  <div className="text-[14px] font-medium text-ink-900 truncate">
                     {c.name}
                   </div>
                   {c.phone && (
@@ -168,12 +168,12 @@ export function NewAppointmentDrawer({
                 className="w-full flex items-center justify-between px-3 py-2 rounded border border-ink-200 hover:border-brand text-left"
               >
                 <div>
-                  <div className="text-[13px] font-medium text-ink-900">
+                  <div className="text-[14px] font-medium text-ink-900">
                     {s.name}
                   </div>
                   <div className="text-[11px] text-ink-500">{s.duration}</div>
                 </div>
-                <div className="text-[13px] font-semibold text-ink-900">
+                <div className="text-[14px] font-semibold text-ink-900">
                   ${s.price}
                 </div>
               </button>
@@ -194,7 +194,7 @@ export function NewAppointmentDrawer({
               <input
                 value={start}
                 onChange={(e) => setStart(e.target.value)}
-                className="w-full h-9 px-2 rounded border border-ink-300 outline-none focus:border-brand text-[13px]"
+                className="w-full h-9 px-2 rounded border border-ink-300 outline-none focus:border-brand text-[14px]"
               />
             </Field>
             <Field label="Staff">

@@ -46,7 +46,7 @@ function Th({ children, className = "" }: { children: React.ReactNode; className
   return <th className={"text-left px-4 py-2 font-bold uppercase text-[10px] tracking-wide text-ink-500 " + className}>{children}</th>;
 }
 function Td({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <td className={"px-4 py-2.5 text-[13px] " + className}>{children}</td>;
+  return <td className={"px-4 py-2.5 text-[14px] " + className}>{children}</td>;
 }
 
 function SalesSummary() {
@@ -204,12 +204,12 @@ function DetailedLineItem() {
           <div className="absolute left-0 top-full mt-2 z-30 w-72 bg-white rounded-lg shadow-xl border border-ink-200 p-4 space-y-3">
             <div className="text-[11px] uppercase font-bold text-ink-500">Filter rows</div>
             <Field label="Type">
-              <select className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px]">
+              <select className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px]">
                 <option>All</option><option>Service</option><option>Product</option><option>Tip</option>
               </select>
             </Field>
             <Field label="Staff">
-              <select className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[13px]">
+              <select className="w-full h-9 px-2 rounded border border-ink-300 bg-white text-[14px]">
                 <option>All</option><option>Mame Diarra</option><option>Naomi K.</option>
               </select>
             </Field>
@@ -327,7 +327,7 @@ function StaffPerformance() {
 function PlaceholderTable() {
   return (
     <Card>
-      <div className="p-12 text-center text-ink-500 text-[13px]">
+      <div className="p-12 text-center text-ink-500 text-[14px]">
         This summary&apos;s data set isn&apos;t wired up in the prototype yet.
         The shell, toolbar, and date-range filter all work — connect real data
         to populate the table here.

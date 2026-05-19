@@ -30,7 +30,7 @@ export function StaffDropdown({
           onPick("ALL");
           onClose();
         }}
-        className="w-full flex items-center justify-between px-3 py-2 text-[13px] hover:bg-ink-50"
+        className="w-full flex items-center justify-between px-3 py-2 text-[14px] hover:bg-ink-50"
       >
         <span className="font-medium text-ink-900">All Staff</span>
         {value === "ALL" && <Check className="h-4 w-4 text-brand" />}
@@ -43,7 +43,7 @@ export function StaffDropdown({
               onPick(s.name);
               onClose();
             }}
-            className="w-full flex items-center justify-between px-3 py-2 text-[13px] hover:bg-ink-50"
+            className="w-full flex items-center justify-between px-3 py-2 text-[14px] hover:bg-ink-50"
           >
             <span className="flex items-center gap-2 min-w-0">
               <span

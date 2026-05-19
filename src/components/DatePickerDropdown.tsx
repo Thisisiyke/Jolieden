@@ -54,7 +54,7 @@ export function DatePickerDropdown({
           {months.map((m) => (
             <div
               key={m.toISOString()}
-              className="text-[13px] font-semibold text-ink-900"
+              className="text-[14px] font-semibold text-ink-900"
             >
               {m.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
             </div>

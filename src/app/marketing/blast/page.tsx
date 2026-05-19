@@ -64,7 +64,7 @@ export default function BlastPage() {
         <div ref={newRef} className="relative">
           <button
             onClick={() => setNewOpen((v) => !v)}
-            className="h-9 px-3 rounded bg-brand text-white text-[13px] font-semibold hover:bg-brand-700 inline-flex items-center gap-2"
+            className="h-9 px-3 rounded bg-brand text-white text-[14px] font-semibold hover:bg-brand-700 inline-flex items-center gap-2"
           >
             <Plus className="h-4 w-4" /> New campaign <ChevronDown className="h-3 w-3" />
           </button>
@@ -77,7 +77,7 @@ export default function BlastPage() {
                 <button
                   key={opt.ch}
                   onClick={() => { setWizard({ channel: opt.ch }); setNewOpen(false); }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-ink-900 hover:bg-ink-50"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-[14px] text-ink-900 hover:bg-ink-50"
                 >
                   <opt.icon className="h-4 w-4 text-ink-500" />
                   {opt.label}
@@ -184,14 +184,14 @@ function Row({
           <Icon className="h-4 w-4" />
         </div>
       </div>
-      <div className="col-span-3 text-[13px] font-semibold text-ink-900 truncate">{r.name}</div>
+      <div className="col-span-3 text-[14px] font-semibold text-ink-900 truncate">{r.name}</div>
       <div className="col-span-2">
         <StatusPill s={r.status} />
       </div>
-      <div className="col-span-2 text-[13px] text-ink-700">{r.sendDate ?? "—"}</div>
-      <div className="col-span-1 text-right text-[13px] text-ink-700">{r.sent?.toLocaleString() ?? "—"}</div>
-      <div className="col-span-1 text-right text-[13px] text-ink-700">{r.clicked?.toLocaleString() ?? "—"}</div>
-      <div className="col-span-1 text-right text-[13px] text-ink-700">{r.unsubscribed?.toLocaleString() ?? "—"}</div>
+      <div className="col-span-2 text-[14px] text-ink-700">{r.sendDate ?? "—"}</div>
+      <div className="col-span-1 text-right text-[14px] text-ink-700">{r.sent?.toLocaleString() ?? "—"}</div>
+      <div className="col-span-1 text-right text-[14px] text-ink-700">{r.clicked?.toLocaleString() ?? "—"}</div>
+      <div className="col-span-1 text-right text-[14px] text-ink-700">{r.unsubscribed?.toLocaleString() ?? "—"}</div>
       <div className="col-span-1 flex justify-end">
         <div ref={ref} className="relative">
           <button
@@ -228,7 +228,7 @@ function Item({ children, onClick, danger }: { children: React.ReactNode; onClic
   return (
     <button
       onClick={onClick}
-      className={"w-full text-left px-3 py-1.5 text-[13px] hover:bg-ink-50 " + (danger ? "text-rose-600 hover:bg-rose-50" : "text-ink-900")}
+      className={"w-full text-left px-3 py-1.5 text-[14px] hover:bg-ink-50 " + (danger ? "text-rose-600 hover:bg-rose-50" : "text-ink-900")}
     >
       {children}
     </button>

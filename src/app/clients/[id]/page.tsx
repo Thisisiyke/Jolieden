@@ -27,7 +27,7 @@ export default async function ClientProfilePage({
             <div className="text-[20px] font-semibold text-ink-900">
               {c.firstName} {c.lastName}
             </div>
-            <div className="text-[13px] text-ink-500 flex items-center gap-3 mt-1 flex-wrap">
+            <div className="text-[14px] text-ink-500 flex items-center gap-3 mt-1 flex-wrap">
               <span className="inline-flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{c.phone}</span>
               <span className="inline-flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{c.email}</span>
             </div>

@@ -23,7 +23,7 @@ export function SummariesNav({
                 key={it.id}
                 onClick={() => onPick(it.id)}
                 className={
-                  "w-full text-left px-4 py-1.5 text-[13px] " +
+                  "w-full text-left px-4 py-1.5 text-[14px] " +
                   (active === it.id
                     ? "bg-brand/10 text-brand font-semibold border-l-2 border-brand"
                     : "text-ink-700 hover:bg-ink-50")

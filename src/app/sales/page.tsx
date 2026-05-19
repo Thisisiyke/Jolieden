@@ -1,2 +1,5 @@
-import { ComingSoon } from "../../components/ComingSoon";
-export default function Page() { return <ComingSoon title="Sales" />; }
+import { redirect } from "next/navigation";
+
+export default function Page() {
+  redirect("/sales/orders");
+}

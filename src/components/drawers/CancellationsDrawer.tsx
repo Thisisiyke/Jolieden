@@ -80,7 +80,7 @@ export function CancellationsDrawer({
 
         {/* Scrollable table */}
         <div className="flex-1 overflow-y-auto">
-          <table className="w-full text-[13px]">
+          <table className="w-full text-[14px]">
             <thead className="bg-ink-50 text-ink-500 uppercase text-[10px] tracking-wide sticky top-0">
               <tr>
                 <th className="text-left px-4 py-2 font-semibold">Client</th>
@@ -121,7 +121,7 @@ export function CancellationsDrawer({
                 <tr>
                   <td
                     colSpan={7}
-                    className="py-16 text-center text-ink-500 text-[13px]"
+                    className="py-16 text-center text-ink-500 text-[14px]"
                   >
                     <Search className="h-5 w-5 mx-auto mb-2 text-ink-300" />
                     No cancellations match those filters.
