@@ -14,6 +14,39 @@ Total Day-1-to-feature-complete: ~10 months for a 2-engineer team.
 
 ---
 
+## Phase 0 — prerequisites (before any engineering)
+
+Two weeks of paperwork and audits that must start Day 1 of week -2 (i.e. before the team is told to start coding). Skipping these is the #1 reason production launch dates slip in this stack.
+
+### 0.1 Paperwork (Diéssou + PM)
+
+- [ ] **10DLC brand registration** with The Campaign Registry — 4-6 weeks approval. Without it, US carriers throttle/block SMS at production volume. File on day 1.
+- [ ] **Apple Developer Program** enrollment for "Jolieden Inc." ($99/yr) — Apple review takes 1-2 weeks, so submit first TestFlight 4 weeks before public launch.
+- [ ] **Google Play Console** developer account ($25 one-time).
+- [ ] **Stripe Connect application** for the platform account (per Diéssou's salon LLC). Connect Express onboarding for each stylist follows in Phase 1 wk 3.
+- [ ] **Google Business Profile API** access (requires Google Cloud project + billing).
+- [ ] **OpenAI API account** for embeddings (or Voyage AI if first-party AI matters).
+- [ ] **Anthropic API account** + workspace billing.
+
+### 0.2 Source-of-truth audits (lead engineer + Diéssou)
+
+- [ ] **Services catalog audit** — `src/lib/catalog.ts` from the prototype contains placeholder prices. Diéssou confirms each service's name, base price, duration, and modifier options against her current price book. This is the source of truth for both AI quoting and booking-deposit math; getting it wrong costs revenue every appointment. **~3 hours with Diéssou.**
+- [ ] **Staff roster audit** — Names, phones, emails, roles, commission percentages, location assignments. Goes into `seed_staff.sql` for Phase 1 wk 2.
+- [ ] **Hours of operation per location** — JSON shape per `locations.hours_json` (see Appendix A.12). Holiday closures captured for the AI knowledge base.
+- [ ] **Cancellation / deposit / late policies** — Final wording, sign-off from Diéssou. Lives in `knowledge_documents` and is quoted verbatim by the AI.
+- [ ] **Prep instructions per service** — 1-2 paragraphs each. Knowledge-base seed content for Phase 2 AI launch (don't wait until Phase 2 to draft).
+
+### 0.3 Tech onboarding (engineering)
+
+- [ ] **Read Next.js 16 + App Router + Edge Runtime docs** (per AGENTS.md, Next.js APIs have shifted; don't rely on training-data familiarity). Specifically: route handlers, signature verification patterns, `waitUntil()` semantics, Edge Function size limits.
+- [ ] **Familiarize with Supabase RLS gotchas** — Realtime + RLS interaction (filters fire server-side per §7.2), the `auth.uid()` claim shape, and the `service_role` bypass.
+- [ ] **Boulevard data export** — Pull a sample CSV (the actual file, not the schema) from Diéssou's Boulevard admin. Eyeball the shape before writing the importer.
+- [ ] **Walk through the clickable prototype** — Run `npm run dev`, click every screen in `/demo`, read `CLAUDE.md` end-to-end. The product design is in working code; production rebuilds it but keeps the same flows.
+
+**Estimated Phase 0 duration: 2 calendar weeks** (paperwork runs in parallel with audits and tech onboarding).
+
+---
+
 ## Phase 1 — Day-1 cutover (16 weeks)
 
 Goal: **Diéssou can turn off Boulevard and run the salon on Day 1.**

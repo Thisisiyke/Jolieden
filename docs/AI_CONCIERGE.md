@@ -326,30 +326,22 @@ After calling `escalate`, the AI sends one final message to the client: *"Let me
 
 ## 4. Knowledge base structure
 
-### 4.1 Document shape
+### 4.1 Document + chunk shape
 
-```sql
-create table knowledge_documents (
-  id uuid pk default gen_random_uuid(),
-  org_id uuid fk,
-  title text not null,
-  body_md text not null,
-  source_label text,            -- "Policies · updated 2026-03-14"
-  category text,                -- "policies" | "pricing" | "prep" | "hours" | "faq" | "stylist_bio"
-  active bool default true,
-  updated_at timestamptz default now(),
-  embedding vector(1536)        -- text-embedding-3-small
-);
+Knowledge base is split into two tables: `knowledge_documents` holds the authored Markdown, `knowledge_chunks` holds the embedded segments. **Embedding lives on the chunk, not the document.** This is the canonical model; see [ARCHITECTURE.md Appendix A.7](./ARCHITECTURE.md#a7-knowledge_documents--embeddings-see-ai_conciergemd-4) for full DDL including the versioning table.
 
-create index on knowledge_documents using ivfflat (embedding vector_cosine_ops);
-```
+Summary shape:
 
-### 4.2 Chunking + embedding
+- `knowledge_documents` — `title`, `body_md`, `source_label`, `category`, `active`, `authored_by_staff_id`, `updated_at`. No embedding column.
+- `knowledge_chunks` — `document_id fk`, `chunk_index`, `content text`, `embedding vector(1536)`. Indexed `ivfflat (embedding vector_cosine_ops) with (lists = 100)`. Composite unique `(document_id, chunk_index)` so re-embedding is idempotent.
+- `knowledge_document_versions` — full body history per edit, with `updated_by_staff_id` for audit.
+
+### 4.2 Chunking + embedding pipeline
 
 - Documents authored as Markdown via `/owner/knowledge` UI (Diéssou writes; staff edits).
 - Each document chunked into 400-token segments with 50-token overlap.
-- Chunks embedded with **OpenAI `text-embedding-3-small`** (cheap, good quality; can swap for Voyage AI later for first-party AI).
-- Embedding pipeline runs on `INSERT/UPDATE` via Supabase Edge Function trigger.
+- Chunks embedded with **OpenAI `text-embedding-3-small`** (cheap, good quality; can swap for Voyage AI later for first-party AI consistency).
+- Pipeline runs on `INSERT/UPDATE` of `knowledge_documents`: a Supabase Edge Function trigger deletes existing `knowledge_chunks` for that document, re-chunks, calls OpenAI embeddings in batch, inserts new chunks. (This is one of the *only* places we use Supabase Edge Functions per §4.1 of the architecture doc.)
 
 ### 4.3 Day-1 knowledge base seeds
 

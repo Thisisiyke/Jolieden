@@ -404,20 +404,24 @@ The AI Concierge is the differentiator vs. Boulevard. It needs its own clarity.
 
 ### 5.2 Stack
 
+> Per §4.1: the AI worker runs as a **Next.js API route on Vercel** (`app/api/twilio/inbound/route.ts`), not as a Supabase Edge Function. Supabase Edge Functions are reserved for DB triggers and cron only.
+
 ```
 Twilio Conversations ─┐
-                       │  inbound webhook  ┌────────────────────┐
-                       └─────────────────▶ │  Edge Function     │
-                                           │  ai_concierge      │
-                                           └─────────┬──────────┘
+                       │  inbound webhook  ┌──────────────────────────┐
+                       └─────────────────▶ │  Next.js API route       │
+                                           │  app/api/twilio/inbound  │
+                                           │  (Vercel — see §4.1)     │
+                                           └─────────┬────────────────┘
                                                      │
                             ┌────────────────────────┼─────────────────────────┐
                             ▼                        ▼                         ▼
                     ┌────────────────┐    ┌────────────────┐         ┌────────────────┐
-                    │  Postgres      │    │  Anthropic     │         │  Pinecone /    │
-                    │  (history,     │    │  Claude        │         │  pgvector      │
-                    │   client       │    │  (tool use)    │         │  (RAG over     │
-                    │   profile)     │    │                │         │   salon docs)  │
+                    │  Supabase      │    │  Anthropic     │         │  pgvector      │
+                    │  Postgres      │    │  Claude        │         │  (RAG over     │
+                    │  (history,     │    │  (tool use)    │         │   knowledge_   │
+                    │   client       │    │                │         │   chunks)      │
+                    │   profile)     │    │                │         │                │
                     └────────────────┘    └────────┬───────┘         └────────────────┘
                                                    │
                                           tool calls invoked
@@ -664,7 +668,7 @@ Triggered server-side from Next.js API routes via Expo's HTTP API. Tokens stored
 - **Setup**:
   1. Register the Jolieden number with Twilio.
   2. **10DLC registration** for US business SMS (Diéssou must complete the brand vetting; ~$30/mo + per-message rate). This is non-negotiable for US SMS sending at any volume.
-  3. Webhook → Edge Function `ai_concierge_webhook`.
+  3. Webhook → `POST /api/twilio/inbound` (Next.js API route on Vercel).
   4. Outbound messages via Twilio API from edge functions.
 - **MMS** (image attachments): supported, increases per-message cost ~10×. Used for repair-photo replies, before/after.
 
