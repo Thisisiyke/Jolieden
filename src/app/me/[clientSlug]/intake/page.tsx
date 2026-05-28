@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
-import { FileSignature, Camera, ChevronRight } from "lucide-react";
+import { FileSignature, Camera } from "lucide-react";
 import { resolveClient } from "@/lib/personas";
+import IntakeSubmit from "@/components/me/IntakeSubmit";
+import BackArrow from "@/components/me/BackArrow";
 
 export default async function IntakePage({
   params,
@@ -14,7 +16,8 @@ export default async function IntakePage({
   return (
     <div className="space-y-5 px-4 py-5">
       <header>
-        <div className="font-mono text-[10px] uppercase tracking-wider text-brand">
+        <BackArrow clientSlug={clientSlug} />
+        <div className="mt-2 font-mono text-[10px] uppercase tracking-wider text-brand">
           📋 First-time intake
         </div>
         <h1 className="mt-1 font-serif text-[26px] font-semibold leading-tight text-ink-900">
@@ -153,13 +156,7 @@ export default async function IntakePage({
         </div>
       </section>
 
-      <button
-        type="button"
-        className="flex w-full items-center justify-center gap-1.5 rounded-md bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-700"
-      >
-        Submit intake form
-        <ChevronRight className="h-4 w-4" />
-      </button>
+      <IntakeSubmit clientSlug={client.slug} />
     </div>
   );
 }

@@ -14,6 +14,8 @@ type Props = { escalation: AIEscalation };
 export default function InboxThread({ escalation }: Props) {
   const [takenOver, setTakenOver] = useState(false);
   const [draft, setDraft] = useState("");
+  const [resolved, setResolved] = useState(false);
+  const [sent, setSent] = useState<string[]>([]);
 
   return (
     <div className="rounded-xl border border-ink-200 bg-white">
@@ -61,8 +63,32 @@ export default function InboxThread({ escalation }: Props) {
           </li>
         ))}
       </ul>
+      {/* Stylist's outbound replies (local state only — production wires
+          to the Twilio Conversations API per AI_CONCIERGE.md §6). */}
+      {sent.length > 0 && (
+        <ul className="space-y-2 border-t border-ink-200 bg-paper px-4 py-3">
+          {sent.map((body, i) => (
+            <li key={i} className="flex flex-row-reverse gap-2 text-xs">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-status-confirmed text-white">
+                <User className="h-3 w-3" />
+              </div>
+              <div className="max-w-[80%] rounded-lg bg-status-confirmed/10 px-3 py-1.5 text-right">
+                <p>{body}</p>
+                <span className="mt-0.5 block font-mono text-[9px] text-ink-500">
+                  just now
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="border-t border-ink-200 bg-paper-mute px-4 py-3">
-        {takenOver ? (
+        {resolved ? (
+          <div className="flex items-center justify-center gap-1.5 rounded-md bg-status-confirmed/10 px-3 py-2 text-xs font-medium text-status-confirmed">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Resolved — thread closed
+          </div>
+        ) : takenOver ? (
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-xs font-medium text-status-confirmed">
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -75,11 +101,19 @@ export default function InboxThread({ escalation }: Props) {
               rows={2}
               className="w-full resize-none rounded-md border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none"
             />
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                onClick={() => setResolved(true)}
+                className="rounded-md border border-ink-200 bg-white px-3 py-1.5 text-xs font-medium text-ink-700 hover:border-status-confirmed hover:text-status-confirmed"
+              >
+                Mark resolved
+              </button>
               <button
                 type="button"
                 disabled={!draft.trim()}
                 onClick={() => {
+                  setSent((p) => [...p, draft.trim()]);
                   setDraft("");
                 }}
                 className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"

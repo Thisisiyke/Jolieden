@@ -99,7 +99,17 @@ function buildHeroCards(
 
 // ───────────────────── sub-components ─────────────────────
 
-function BirthdayHero({ daysAway, tier }: { daysAway: number; tier: string }) {
+function BirthdayHero({
+  daysAway,
+  tier,
+  upcomingHref,
+  bookHref,
+}: {
+  daysAway: number;
+  tier: string;
+  upcomingHref?: string;
+  bookHref: string;
+}) {
   const gifts: { label: string; sub?: string }[] = [
     { label: "Comp Wash & Blow", sub: "Auto-applied at check-in" },
     { label: "200 bonus points", sub: "Drops in 24h before your visit" },
@@ -134,6 +144,25 @@ function BirthdayHero({ daysAway, tier }: { daysAway: number; tier: string }) {
           </li>
         ))}
       </ul>
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+        {upcomingHref ? (
+          <Link
+            href={upcomingHref}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-brand py-2.5 text-xs font-semibold text-white hover:bg-brand-700"
+          >
+            See your birthday visit
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        ) : (
+          <Link
+            href={bookHref}
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-brand py-2.5 text-xs font-semibold text-white hover:bg-brand-700"
+          >
+            Book your birthday visit
+            <ChevronRight className="h-3.5 w-3.5" />
+          </Link>
+        )}
+      </div>
     </section>
   );
 }
@@ -410,7 +439,14 @@ export default async function ClientHomePage({
 
       {/* Birthday hero (Naomi only, in addition to the carousel card) */}
       {showBirthday && daysToBday !== null && (
-        <BirthdayHero daysAway={daysToBday} tier={tierFor(client)} />
+        <BirthdayHero
+          daysAway={daysToBday}
+          tier={tierFor(client)}
+          upcomingHref={
+            nextAppt ? `/me/${clientSlug}/bookings/${nextAppt.id}` : undefined
+          }
+          bookHref={`/book?as=${clientSlug}`}
+        />
       )}
 
       {/* Loyalist: rebook your usual */}

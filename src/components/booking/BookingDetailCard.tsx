@@ -50,6 +50,8 @@ const STATUS_BADGE: Record<ApptStatus, { label: string; cls: string }> = {
   arrived: { label: "Checked in", cls: "bg-status-arrived/15 text-status-arrived border-status-arrived/40" },
   active: { label: "In service", cls: "bg-status-active/15 text-status-active border-status-active/40" },
   completed: { label: "Complete", cls: "bg-status-completed/15 text-status-completed border-status-completed/40" },
+  cancelled: { label: "Cancelled", cls: "bg-rose-100 text-rose-700 border-rose-200" },
+  noshow: { label: "No-show", cls: "bg-rose-100 text-rose-700 border-rose-200" },
 };
 
 // next-status mapping per view
@@ -320,8 +322,15 @@ export default function BookingDetailCard({ appointmentId, view, clientSlug }: P
   };
 
   const cancel = () => {
-    // Prototype: just nudge to completed/cancelled-like state for demo.
-    setAppointmentStatus(appt.id, "completed");
+    // Soft confirm — for the prototype an inline native confirm is fine;
+    // production would replace with a styled sheet.
+    if (typeof window !== "undefined") {
+      const ok = window.confirm(
+        "Cancel this booking? Within 24 hours forfeits the $25 deposit.",
+      );
+      if (!ok) return;
+    }
+    setAppointmentStatus(appt.id, "cancelled");
   };
 
   return (
@@ -420,12 +429,22 @@ export default function BookingDetailCard({ appointmentId, view, clientSlug }: P
       {/* Secondary CTAs */}
       {view === "client" && (appt.status === "confirmed" || appt.status === "unconfirmed") && (
         <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            className="flex items-center justify-center gap-1.5 rounded-md border border-ink-200 bg-white py-2 text-xs font-medium text-ink-700 hover:bg-paper"
-          >
-            <RefreshCcw className="h-3.5 w-3.5" /> Reschedule
-          </button>
+          {clientSlug ? (
+            <Link
+              href={`/book/checkout?as=${clientSlug}&rebook=${appt.id}`}
+              className="flex items-center justify-center gap-1.5 rounded-md border border-ink-200 bg-white py-2 text-xs font-medium text-ink-700 hover:bg-paper"
+            >
+              <RefreshCcw className="h-3.5 w-3.5" /> Reschedule
+            </Link>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className="flex items-center justify-center gap-1.5 rounded-md border border-ink-200 bg-white py-2 text-xs font-medium text-ink-400"
+            >
+              <RefreshCcw className="h-3.5 w-3.5" /> Reschedule
+            </button>
+          )}
           <button
             type="button"
             onClick={cancel}
@@ -434,6 +453,28 @@ export default function BookingDetailCard({ appointmentId, view, clientSlug }: P
             <XCircle className="h-3.5 w-3.5" /> Cancel
           </button>
         </div>
+      )}
+
+      {/* Cancelled / no-show terminal state — show recovery CTA */}
+      {view === "client" && (appt.status === "cancelled" || appt.status === "noshow") && (
+        <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-rose-700">
+            {appt.status === "cancelled" ? "Cancelled" : "Marked no-show"}
+          </div>
+          <p className="mt-1 text-sm text-ink-900">
+            {appt.status === "cancelled"
+              ? "This booking was cancelled. Deposit is refunded if cancelled 48+ hours ahead."
+              : "Sorry we missed you. Reach out and we'll find a new time."}
+          </p>
+          {clientSlug && (
+            <Link
+              href={`/book?as=${clientSlug}`}
+              className="mt-3 inline-block rounded-md bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-700"
+            >
+              Book a new visit
+            </Link>
+          )}
+        </section>
       )}
 
       {view === "client" && appt.status === "completed" && (

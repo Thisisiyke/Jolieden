@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Wallet, Info } from "lucide-react";
 import { resolveClient } from "@/lib/personas";
+import BackArrow from "@/components/me/BackArrow";
 
 function creditFor(slug: string): {
   balance: number;
@@ -37,7 +38,8 @@ export default async function CreditPage({
   return (
     <div className="space-y-5 px-4 py-5">
       <header>
-        <h1 className="font-serif text-[28px] font-semibold leading-tight text-ink-900">
+        <BackArrow clientSlug={clientSlug} />
+        <h1 className="mt-2 font-serif text-[28px] font-semibold leading-tight text-ink-900">
           Account credit
         </h1>
         <p className="mt-1 text-xs text-ink-500">

@@ -4,6 +4,7 @@ import { Crown, Check, Calendar, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 import { resolveClient } from "@/lib/personas";
 import { TIERS, tierFor, pointsFor, nextTierFor, type RewardTier } from "@/lib/rewards";
+import BackArrow from "@/components/me/BackArrow";
 
 const TIER_BG: Record<RewardTier, string> = {
   Bronze: "from-[#a67c52] to-[#8a5a2e]",
@@ -29,7 +30,8 @@ export default async function MembershipPage({
   return (
     <div className="space-y-5 px-4 py-5">
       <header>
-        <h1 className="font-serif text-[28px] font-semibold leading-tight text-ink-900">
+        <BackArrow clientSlug={clientSlug} />
+        <h1 className="mt-2 font-serif text-[28px] font-semibold leading-tight text-ink-900">
           Membership
         </h1>
         <p className="mt-1 text-xs text-ink-500">

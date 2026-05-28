@@ -25,6 +25,8 @@ const NEXT_STATUS: Record<ApptStatus, ApptStatus> = {
   arrived: "active",
   active: "completed",
   completed: "completed",
+  cancelled: "cancelled",
+  noshow: "noshow",
 };
 
 export default function FrontDeskPage() {

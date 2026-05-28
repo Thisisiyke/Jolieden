@@ -4,6 +4,7 @@ import { Heart } from "lucide-react";
 import { resolveClient } from "@/lib/personas";
 import { STYLES } from "@/lib/gallery";
 import WishlistGrid from "@/components/me/WishlistGrid";
+import BackArrow from "@/components/me/BackArrow";
 
 export default async function WishlistPage({
   params,
@@ -17,7 +18,8 @@ export default async function WishlistPage({
   return (
     <div className="space-y-5 px-4 py-5">
       <header>
-        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
+        <BackArrow clientSlug={clientSlug} />
+        <div className="mt-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
           <Heart className="h-3 w-3 fill-brand" /> 💜 Wishlist
         </div>
         <h1 className="mt-1 font-serif text-[28px] font-semibold leading-tight text-ink-900">

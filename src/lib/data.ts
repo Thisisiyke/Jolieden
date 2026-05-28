@@ -4,7 +4,9 @@ export type ApptStatus =
   | "walkin"
   | "arrived"
   | "active"
-  | "completed";
+  | "completed"
+  | "cancelled"
+  | "noshow";
 
 export type Appointment = {
   id: string;

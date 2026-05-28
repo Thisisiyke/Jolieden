@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
-import { Sparkles, Gift, Star, TrendingUp, History } from "lucide-react";
+import { Sparkles, Star, TrendingUp, History } from "lucide-react";
 import clsx from "clsx";
 import { resolveClient } from "@/lib/personas";
+import RedemptionsList from "@/components/me/RedemptionsList";
+import BackArrow from "@/components/me/BackArrow";
 import {
   TIERS,
   pointsFor,
@@ -60,7 +62,8 @@ export default async function RewardsPage({
   return (
     <div className="space-y-5 px-4 py-5">
       <header>
-        <h1 className="font-serif text-[28px] font-semibold leading-tight text-ink-900">
+        <BackArrow clientSlug={clientSlug} />
+        <h1 className="mt-2 font-serif text-[28px] font-semibold leading-tight text-ink-900">
           Rewards
         </h1>
         <p className="mt-1 text-xs text-ink-500">
@@ -136,47 +139,7 @@ export default async function RewardsPage({
             you have {points.toLocaleString("en-US")} pts
           </span>
         </div>
-        <ul className="space-y-2">
-          {REDEMPTIONS.map((r) => {
-            const canAfford = points >= r.cost;
-            return (
-              <li
-                key={r.id}
-                className={clsx(
-                  "flex items-center gap-3 rounded-xl border p-3",
-                  canAfford ? "border-ink-200 bg-white" : "border-ink-200 bg-paper opacity-70",
-                )}
-              >
-                <div
-                  className={clsx(
-                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
-                    canAfford ? "bg-brand/10 text-brand" : "bg-ink-100 text-ink-400",
-                  )}
-                >
-                  <Gift className="h-4 w-4" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium text-ink-900">{r.label}</div>
-                  {r.description && (
-                    <div className="text-xs text-ink-500">{r.description}</div>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  disabled={!canAfford}
-                  className={clsx(
-                    "shrink-0 rounded-full px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider transition-colors",
-                    canAfford
-                      ? "bg-brand text-white hover:bg-brand-700"
-                      : "bg-ink-100 text-ink-500",
-                  )}
-                >
-                  {r.cost} pts
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+        <RedemptionsList redemptions={REDEMPTIONS} points={points} />
       </section>
 
       {/* Activity */}

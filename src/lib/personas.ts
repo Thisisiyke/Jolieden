@@ -22,6 +22,17 @@ export const resolveStylist = (slug: string | undefined): Stylist | undefined =>
 export const clientById = (id: string): Client | undefined =>
   CLIENTS.find((c) => c.id === id);
 
+// Resolve a Client by their display name string (the field used on
+// Appointment.client). Case + whitespace insensitive. Returns undefined
+// when no exact match — caller is expected to handle gracefully.
+export const resolveClientByName = (name: string | undefined): Client | undefined => {
+  if (!name) return undefined;
+  const target = name.toLowerCase().trim();
+  return CLIENTS.find(
+    (c) => `${c.firstName} ${c.lastName}`.toLowerCase().trim() === target,
+  );
+};
+
 export const stylistById = (id: string): Stylist | undefined =>
   STAFF.find((s) => s.id === id);
 

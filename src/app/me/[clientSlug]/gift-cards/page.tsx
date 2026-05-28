@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Gift, Plus, Copy, ChevronRight } from "lucide-react";
 import { resolveClient } from "@/lib/personas";
+import BackArrow from "@/components/me/BackArrow";
 
 // Mock gift card data — picked per-persona so the screen reads as lived-in.
 function balanceFor(slug: string): number {
@@ -37,7 +38,8 @@ export default async function GiftCardsPage({
   return (
     <div className="space-y-5 px-4 py-5">
       <header>
-        <h1 className="font-serif text-[28px] font-semibold leading-tight text-ink-900">Gift cards</h1>
+        <BackArrow clientSlug={clientSlug} />
+        <h1 className="mt-2 font-serif text-[28px] font-semibold leading-tight text-ink-900">Gift cards</h1>
         <p className="mt-1 text-xs text-ink-500">
           Balance, redemption code, and recent activity. Apply at checkout or in person.
         </p>

@@ -12,7 +12,11 @@ const STATUS_DOT: Record<ApptStatus, string> = {
   arrived: "bg-status-arrived",
   active: "bg-status-active",
   completed: "bg-status-completed",
+  cancelled: "bg-rose-500",
+  noshow: "bg-rose-500",
 };
+
+const TERMINAL_STATUSES = new Set<ApptStatus>(["completed", "cancelled", "noshow"]);
 
 function ApptCard({
   appt,
@@ -52,11 +56,14 @@ export default async function ClientBookingsListPage({
   if (!client) notFound();
 
   const appts = appointmentsForClient(clientSlug);
+  // Upcoming = future date AND not terminal (completed/cancelled/noshow).
+  // Cancelled/noshow appointments — even if future-dated — move to the
+  // past section so users can still see them but not act on them.
   const upcoming = appts
-    .filter((a) => a.date >= TODAY && a.status !== "completed")
+    .filter((a) => a.date >= TODAY && !TERMINAL_STATUSES.has(a.status))
     .sort((a, b) => a.date.localeCompare(b.date));
   const past = appts
-    .filter((a) => a.date < TODAY || a.status === "completed")
+    .filter((a) => a.date < TODAY || TERMINAL_STATUSES.has(a.status))
     .sort((a, b) => b.date.localeCompare(a.date));
 
   return (

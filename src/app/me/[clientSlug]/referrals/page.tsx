@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Users, Copy, MessageCircle, Mail, Share2, Check } from "lucide-react";
 import { resolveClient } from "@/lib/personas";
+import BackArrow from "@/components/me/BackArrow";
 
 function referralsFor(slug: string): {
   earned: number;
@@ -37,7 +38,8 @@ export default async function ReferralsPage({
   return (
     <div className="space-y-5 px-4 py-5">
       <header>
-        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
+        <BackArrow clientSlug={client.slug} />
+        <div className="mt-2 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
           <Users className="h-3 w-3" /> 🤝 Refer a friend
         </div>
         <h1 className="mt-1 font-serif text-[28px] font-semibold leading-tight text-ink-900">

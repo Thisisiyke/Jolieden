@@ -26,6 +26,8 @@ const STATUS_DOT: Record<ApptStatus, string> = {
   arrived: "bg-status-arrived",
   active: "bg-status-active",
   completed: "bg-status-completed",
+  cancelled: "bg-rose-500",
+  noshow: "bg-rose-500",
 };
 
 const fmtCurrency = (n: number) => `$${n.toLocaleString("en-US")}`;

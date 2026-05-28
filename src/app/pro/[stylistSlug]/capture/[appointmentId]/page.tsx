@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Camera, ImagePlus, FileText, ChevronRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { resolveStylist } from "@/lib/personas";
 import { APPOINTMENTS } from "@/lib/data";
+import CaptureClient from "@/components/pro/CaptureClient";
 
 export default async function CapturePage({
   params,
@@ -45,64 +46,13 @@ export default async function CapturePage({
         )}
       </section>
 
-      {/* Before */}
-      <section>
-        <h2 className="px-1 pb-1.5 font-mono text-[10px] uppercase tracking-wider text-ink-500">
-          Before
-        </h2>
-        <button
-          type="button"
-          className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-ink-300 bg-paper text-ink-500 hover:border-brand"
-        >
-          <Camera className="h-7 w-7" />
-          <span className="text-sm font-medium">Tap to capture before photo</span>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-            Auto-saves to client&apos;s hair journey
-          </span>
-        </button>
-      </section>
-
-      {/* After */}
-      <section>
-        <h2 className="px-1 pb-1.5 font-mono text-[10px] uppercase tracking-wider text-ink-500">
-          After
-        </h2>
-        <button
-          type="button"
-          className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-ink-300 bg-paper text-ink-500 hover:border-brand"
-        >
-          <ImagePlus className="h-7 w-7" />
-          <span className="text-sm font-medium">Add finished look photo</span>
-          <span className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-            Required before marking complete
-          </span>
-        </button>
-      </section>
-
-      {/* Notes */}
-      <section className="rounded-2xl border border-ink-200 bg-white p-4">
-        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
-          <FileText className="h-3 w-3" /> Service notes (for the next visit)
-        </div>
-        <textarea
-          placeholder="Used new bond builder · tone came out warmer than expected · skip clarifying next time"
-          rows={3}
-          className="mt-2 w-full resize-none rounded-md border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none"
-        />
-      </section>
-
-      {/* Markup hint */}
-      <section className="rounded-xl border border-ink-200 bg-paper p-3 text-xs text-ink-700">
-        <strong className="text-ink-900">Tip:</strong> Long-press a photo to annotate areas you adjusted — the markup syncs to the client&apos;s journey for context.
-      </section>
-
-      <button
-        type="button"
-        className="flex w-full items-center justify-center gap-1.5 rounded-md bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-700"
-      >
-        Save to journey
-        <ChevronRight className="h-4 w-4" />
-      </button>
+      <CaptureClient
+        stylistSlug={stylistSlug}
+        appointmentId={appointmentId}
+        clientName={appt.client}
+        serviceName={appt.service || "Visit"}
+        defaultStylistName={appt.staff || stylist.name}
+      />
     </div>
   );
 }
