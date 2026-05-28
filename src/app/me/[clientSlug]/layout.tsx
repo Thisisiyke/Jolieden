@@ -8,6 +8,7 @@ import MobileFrame from "@/components/MobileFrame";
 import MobileSplash from "@/components/MobileSplash";
 import MeTopBar from "@/components/me/MeTopBar";
 import MeTabBar from "@/components/me/MeTabBar";
+import AssistanceFab from "@/components/me/AssistanceFab";
 
 export default async function MeShell({
   children,
@@ -26,6 +27,7 @@ export default async function MeShell({
       <MeTopBar client={client} unreadCount={2} />
       <main className="min-h-0 flex-1 overflow-y-auto bg-paper">{children}</main>
       <MeTabBar clientSlug={clientSlug} />
+      <AssistanceFab />
     </MobileFrame>
   );
 }

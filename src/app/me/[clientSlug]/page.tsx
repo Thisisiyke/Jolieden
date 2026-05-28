@@ -26,6 +26,7 @@ import {
 } from "@/lib/gallery";
 import { TODAY, type Appointment, type Client } from "@/lib/data";
 import { pointsFor, tierFor, nextTierFor } from "@/lib/rewards";
+import { tipForService } from "@/lib/careTips";
 import HeroCarousel, { type HeroCard } from "@/components/me/HeroCarousel";
 import PhotoRow from "@/components/me/PhotoRow";
 import StylistSpotlight from "@/components/me/StylistSpotlight";
@@ -444,15 +445,51 @@ export default async function ClientHomePage({
         seeAllHref="/book"
       />
 
-      {/* Care tip — keep small */}
-      <section className="rounded-2xl border border-ink-200 bg-paper p-4">
-        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
-          💡 Care tip
-        </div>
-        <p className="mt-1 text-sm text-ink-700">
-          Sleep on a silk pillowcase to extend the life of your braids by 1–2 weeks.
-        </p>
-      </section>
+      {/* Personalized care follow-up, keyed to the client's last service.
+          Falls back to a braids tip when there's nothing on file. */}
+      {(() => {
+        const daysSince = lastCompleted
+          ? Math.max(
+              0,
+              Math.round(
+                (new Date(TODAY + "T00:00:00").getTime() -
+                  new Date(lastCompleted.date + "T00:00:00").getTime()) /
+                  (1000 * 60 * 60 * 24),
+              ),
+            )
+          : 0;
+        const { tip, category } = tipForService(lastCompleted?.service, daysSince);
+        return (
+          <section className="rounded-2xl border border-ink-200 bg-paper p-4">
+            <div className="flex items-center justify-between">
+              <div className="font-mono text-[10px] uppercase tracking-wider text-brand">
+                💡 Care tip · for your last {category.replace("_", " ")}
+              </div>
+              {lastCompleted && (
+                <div className="font-mono text-[10px] text-ink-500">{daysSince} d ago</div>
+              )}
+            </div>
+            <h3 className="mt-1 text-sm font-semibold text-ink-900">{tip.headline}</h3>
+            <p className="mt-0.5 text-sm text-ink-700">{tip.body}</p>
+            {tip.product && (
+              <div className="mt-2 flex items-center justify-between rounded-md border border-ink-200 bg-white px-3 py-2 text-xs">
+                <div>
+                  <div className="font-medium text-ink-900">{tip.product.name}</div>
+                  <div className="font-mono text-[10px] text-ink-500">
+                    Recommended add-on
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="rounded-full bg-brand px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-white hover:bg-brand-700"
+                >
+                  Add · ${tip.product.price}
+                </button>
+              </div>
+            )}
+          </section>
+        );
+      })()}
     </div>
   );
 }

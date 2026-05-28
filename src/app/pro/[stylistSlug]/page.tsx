@@ -165,6 +165,37 @@ export default async function StylistTodayPage({
           </section>
         )}
 
+        {/* Salon-wide WEEKLY goal — ladders into Employee of the Month
+            bonus per Diéssou's "Weekly Goals" Must-Have. */}
+        <section className="overflow-hidden rounded-2xl border border-brand/30 bg-gradient-to-br from-brand to-brand-700 p-4 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-white/80">
+              <Target className="h-3 w-3" /> 🏆 Weekly goal · Apr 13–19
+            </div>
+            <span className="font-mono text-[10px] text-white/80">
+              $18,200 / $22,000
+            </span>
+          </div>
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/15">
+            <div
+              className="h-full rounded-full bg-gold"
+              style={{ width: `${Math.round((18200 / 22000) * 100)}%` }}
+            />
+          </div>
+          <p className="mt-2 text-xs text-white/90">
+            83% to hit. Friday + Saturday usually cover the gap. Top earner this week unlocks the
+            Employee of the Month bonus.
+          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <span className="rounded-full bg-white/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider">
+              Leader · Oumou
+            </span>
+            <span className="rounded-full bg-white/15 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider">
+              $4,820
+            </span>
+          </div>
+        </section>
+
         {/* Salon-wide daily goals */}
         <section className="rounded-2xl border border-ink-200 bg-white p-4">
           <div className="flex items-center justify-between">
@@ -236,6 +267,23 @@ export default async function StylistTodayPage({
       </header>
 
       {nextAppt && <NextUpCard appt={nextAppt} slug={stylistSlug} />}
+
+      {/* Personal WEEKLY goal — ladders into EotM bonus */}
+      <section className="overflow-hidden rounded-2xl border border-brand/30 bg-gradient-to-br from-brand to-brand-700 p-4 text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-white/80">
+            <Target className="h-3 w-3" /> 🏆 Weekly goal · Apr 13–19
+          </div>
+          <span className="font-mono text-[10px] text-white/80">$3,820 / $4,500</span>
+        </div>
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-white/15">
+          <div className="h-full rounded-full bg-gold" style={{ width: "85%" }} />
+        </div>
+        <p className="mt-2 text-xs text-white/90">
+          85% there. 3 more services hits goal + the bonus. You&apos;re #1 on the salon
+          leaderboard this week.
+        </p>
+      </section>
 
       {/* Personal daily goal */}
       <section className="rounded-2xl border border-ink-200 bg-white p-4">

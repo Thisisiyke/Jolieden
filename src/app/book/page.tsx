@@ -6,6 +6,7 @@ import { STYLES, popularStyles, stylesByCategory } from "@/lib/gallery";
 import { CATEGORIES, type CategorySlug } from "@/lib/catalog";
 import CategoryChips from "@/components/book/CategoryChips";
 import StyleCard from "@/components/book/StyleCard";
+import ReviewsStrip from "@/components/book/ReviewsStrip";
 
 const isCategorySlug = (v: string | undefined): v is CategorySlug =>
   !!v && CATEGORIES.some((c) => c.slug === v);
@@ -85,6 +86,32 @@ export default async function BookGalleryPage({
             </div>
           )}
         </section>
+
+        {/* Meet our stylists link (Diéssou Must-Have) */}
+        <section className="mt-10 rounded-2xl border border-ink-200 bg-white p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-brand">
+                💜 Behind every look
+              </div>
+              <h2 className="mt-1 font-serif text-2xl font-semibold text-brand">
+                Meet our stylists
+              </h2>
+              <p className="mt-1 max-w-md text-sm text-ink-700">
+                Pick by specialty, see their portfolios, read what clients say. Then book directly.
+              </p>
+            </div>
+            <Link
+              href="/book/stylists"
+              className="shrink-0 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+            >
+              See the team
+            </Link>
+          </div>
+        </section>
+
+        {/* Google Reviews strip (Diéssou Must-Have) */}
+        <ReviewsStrip />
       </div>
     </div>
   );
