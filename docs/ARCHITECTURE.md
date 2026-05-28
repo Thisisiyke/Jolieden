@@ -302,6 +302,33 @@ Trade-off: simpler schema, faster v1 ship, but you can't query "every visit that
 - `referral_links` (`code`, `referrer_id`, `redeemed_by_id`, `status`)
 - `audit_log` (everything that mutates)
 
+### 3.2.1 Identity contract (`auth.uid()` ↔ domain rows)
+
+**Convention: Supabase Auth user IDs are reused directly as primary keys for `staff` and `clients` rows.** Specifically:
+
+- When a staff member is invited (via magic link), the Supabase Auth user row is created first, then the `staff` row is inserted with `staff.id = auth.user_id`.
+- When a client first authenticates (via magic link from `/me` or after a booking), the same pattern: Auth user first, then `clients.id = auth.user_id`.
+- This means **every RLS policy `auth.uid() = <table>.id` works as written.**
+
+Without this convention, every RLS policy in §3.3 silently denies all reads. Worth confirming in the first migration with a `check` constraint that fails fast in dev:
+
+```sql
+-- After staff insert, verify the id was the auth.uid() at the time
+create or replace function assert_staff_id_matches_auth()
+  returns trigger language plpgsql as $$
+begin
+  if new.id is distinct from auth.uid() then
+    raise exception 'staff.id must equal auth.uid() for RLS to work';
+  end if;
+  return new;
+end $$;
+
+create trigger staff_id_assert before insert on staff
+  for each row execute function assert_staff_id_matches_auth();
+```
+
+`clients` follows the same shape. The role / permission claim lives in the JWT's `app_metadata` (Supabase Auth's customizable field) — populated by an Auth hook on user creation that reads `staff.role` and `staff_locations` to set `app_metadata.role` and `app_metadata.location_ids[]`.
+
 ### 3.3 Row-Level Security (RLS) sketch
 
 ```sql
