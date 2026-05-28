@@ -181,26 +181,26 @@ const bookTiles = (clients: { coldStart?: Client; loyalist?: Client; birthday?: 
 const meTiles = (clients: { coldStart?: Client; loyalist?: Client; birthday?: Client }): Tile[] => {
   const out: Tile[] = [];
   if (clients.coldStart) {
-    // Primary cold-start tile: browse-first. She lands on her empty home
-    // and explores the gallery as a guest — auth fires only when she taps
-    // Confirm on a booking. Pattern matches Booksy / Fresha / StyleSeat /
-    // Sephora / Ulta. Per Baymard, removing forced signup lifts checkout
-    // completion 20-35%.
-    out.push({
-      href: `/me/${clients.coldStart.slug}`,
-      persona: { name: clients.coldStart.firstName + " " + clients.coldStart.lastName, role: "Just downloaded · browsing", avatarHue: clients.coldStart.avatarHue },
-      badge: { label: "Cold start", tone: "cold" },
-      title: "Imani opens the app for the first time",
-      description: "Browse-first. She lands on the gallery, sees finished looks and prices, no signup wall. Auth fires only when she taps Confirm on a booking.",
-    });
-    // Secondary: the auth flow itself, for reviewers who want to see the
-    // phone-OTP path on its own. In production this would be reached from
-    // the booking-confirm CTA, not as an entry point.
+    // Primary cold-start tile: the actual first-launch experience. After
+    // P32's browse-first restructure this is a 4-screen phone-OTP gate
+    // (welcome → phone → verify → success), not the old 10-screen
+    // intake-form wizard. Tile label must match behavior — "opens for the
+    // first time" lands on what the user actually sees first.
     out.push({
       href: `/onboarding/${clients.coldStart.slug}`,
-      badge: { label: "Sign-in flow", tone: "cold" },
-      title: "Imani · phone-OTP sign-in",
-      description: "The 3-screen auth gate (welcome → phone → verify → success). In production this fires from the booking-confirm CTA; here it's surfaced standalone for review.",
+      persona: { name: clients.coldStart.firstName + " " + clients.coldStart.lastName, role: "Newly downloaded · first launch", avatarHue: clients.coldStart.avatarHue },
+      badge: { label: "Cold start", tone: "cold" },
+      title: "Imani opens the app for the first time",
+      description: "Welcome → phone → SMS verify → success. Lean 4-screen sign-in (no carousel, no hair-intake form). Birthday + hair details get collected just-in-time inside the app.",
+    });
+    // Secondary: jump straight to her authenticated home, for reviewers
+    // who want to see the empty-state browse experience without walking
+    // the sign-in flow first.
+    out.push({
+      href: `/me/${clients.coldStart.slug}`,
+      badge: { label: "Cold start · home", tone: "cold" },
+      title: "Imani · skip to her empty home",
+      description: "Bypass the sign-in. Lands on her authenticated /me home so reviewers can see the cold-start welcome card + birthday nudge + zero-state rewards.",
     });
   }
   if (clients.loyalist) {
