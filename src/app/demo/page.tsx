@@ -108,6 +108,24 @@ const operatorTiles = (owner: Stylist | undefined): Tile[] => [
     title: "Manage — staff, services, hardware",
     description: "Day-to-day admin: staff schedules, service catalog, iPad kiosk, payment processing.",
   },
+  {
+    href: "/manage/floor",
+    badge: { label: "Operator view", tone: "operator" },
+    title: "Live floor view",
+    description: "Visual salon map — each station shows the stylist + current client + chair status. Reads live from the store, so /me + /book bookings show up immediately.",
+  },
+  {
+    href: "/messages/analytics",
+    badge: { label: "Operator view", tone: "operator" },
+    title: "AI conversation analytics",
+    description: "7-day pulse on the AI Concierge: 487 threads handled, 93% AI-resolved, escalation reason breakdown with knowledge-base tuning hints.",
+  },
+  {
+    href: "/kiosk",
+    badge: { label: "Hardware", tone: "operator" },
+    title: "iPad kiosk · front desk",
+    description: "Standalone full-screen kiosk: clients walk up, scan their QR or enter phone number, and the system flips them to arrived.",
+  },
 ];
 
 const bookTiles = (clients: { coldStart?: Client; loyalist?: Client; birthday?: Client }): Tile[] => {
@@ -145,6 +163,18 @@ const bookTiles = (clients: { coldStart?: Client; loyalist?: Client; birthday?: 
     title: "Anonymous — just browsing",
     description: "Visitor without intent yet. Explore the gallery, filter by category, see prices. Identify only at checkout.",
   });
+  out.push({
+    href: "/book/stylist/oumou-d",
+    badge: { label: "Stylist profile", tone: "operator" },
+    title: "Stylist profile · Oumou D.",
+    description: "Bio, portfolio of finished looks, 4.9 rating, mock reviews, direct 'Book with Oumou' CTA.",
+  });
+  out.push({
+    href: "/book/waitlist",
+    badge: { label: "Online waitlist", tone: "hot" },
+    title: "Get on the waitlist",
+    description: "Service + stylist + window + time-of-day. We text the second a slot opens.",
+  });
   return out;
 };
 
@@ -175,6 +205,41 @@ const meTiles = (clients: { coldStart?: Client; loyalist?: Client; birthday?: Cl
       badge: { label: "Birthday", tone: "birthday" },
       title: "Naomi sees her birthday surprise",
       description: "Home tab shows a gold birthday banner with a comp add-on unlocked. Tap to add to her next booking.",
+    });
+  }
+  if (clients.loyalist) {
+    out.push({
+      href: `/me/${clients.loyalist.slug}/rewards`,
+      badge: { label: "Rewards", tone: "hot" },
+      title: "Aaliyah's rewards screen",
+      description: "Points hero, tier ladder, redemption catalog, recent activity. 1,165 pts and Silver tier.",
+    });
+    out.push({
+      href: `/me/${clients.loyalist.slug}/wishlist`,
+      badge: { label: "Wishlist", tone: "hot" },
+      title: "Saved styles",
+      description: "Three styles Aaliyah hearted: Boho Goddess, Honey Knotless, Bora Bora.",
+    });
+    out.push({
+      href: `/me/${clients.loyalist.slug}/checkin`,
+      badge: { label: "QR check-in", tone: "operator" },
+      title: "QR check-in code",
+      description: "Real QR encoding 'jolieden:checkin:<id>:<slug>'. Tap 'demo: simulate scan' to flip her appointment to arrived.",
+    });
+    out.push({
+      href: `/me/${clients.loyalist.slug}/referrals`,
+      badge: { label: "Referral", tone: "hot" },
+      title: "Refer a friend",
+      description: "Code, share buttons, referral history, +100 pts each for both sides.",
+    });
+  }
+  if (clients.coldStart) {
+    out.push({
+      href: `/me/${clients.coldStart.slug}/intake`,
+      persona: { name: clients.coldStart.firstName + " " + clients.coldStart.lastName, role: "First-time intake", avatarHue: clients.coldStart.avatarHue },
+      badge: { label: "Forms", tone: "cold" },
+      title: "Intake form",
+      description: "Texture chips, scalp accommodations, allergies, photo upload, e-signature. Pre-filled.",
     });
   }
   return out;
