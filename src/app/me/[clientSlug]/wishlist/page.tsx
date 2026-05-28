@@ -31,7 +31,7 @@ export default async function WishlistPage({
       <WishlistGrid clientSlug={clientSlug} allStyles={STYLES} />
 
       <Link
-        href="/book"
+        href={`/book?as=${clientSlug}`}
         className="block rounded-2xl border border-dashed border-ink-300 bg-white p-4 text-center text-sm text-brand hover:border-brand"
       >
         Browse more styles →

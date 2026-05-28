@@ -8,13 +8,19 @@ import { stylesByStylist, CATEGORY_PALETTES, type Style } from "@/lib/gallery";
 
 type Props = {
   stylist: Stylist;
+  // Client slug for persona context — propagated to portfolio thumbs +
+  // "Book with" CTA so try-on and rebook banners still work after tap-through.
+  clientSlug?: string;
 };
 
-function WorkThumb({ style }: { style: Style }) {
+function WorkThumb({ style, clientSlug }: { style: Style; clientSlug?: string }) {
   const [start, end] = CATEGORY_PALETTES[style.categorySlug];
+  const href = clientSlug
+    ? `/book/style/${style.slug}?as=${clientSlug}`
+    : `/book/style/${style.slug}`;
   return (
     <Link
-      href={`/book/style/${style.slug}`}
+      href={href}
       className="block aspect-square flex-1 overflow-hidden rounded-md"
       style={
         style.photoUrl
@@ -25,7 +31,7 @@ function WorkThumb({ style }: { style: Style }) {
   );
 }
 
-export default function StylistSpotlight({ stylist }: Props) {
+export default function StylistSpotlight({ stylist, clientSlug }: Props) {
   const works = stylesByStylist(stylist.slug).slice(0, 3);
   const initials = stylist.name
     .split(/\s+/)
@@ -66,12 +72,12 @@ export default function StylistSpotlight({ stylist }: Props) {
         {works.length > 0 && (
           <div className="flex gap-1.5 px-4 pt-3">
             {works.map((w) => (
-              <WorkThumb key={w.id} style={w} />
+              <WorkThumb key={w.id} style={w} clientSlug={clientSlug} />
             ))}
           </div>
         )}
         <Link
-          href={`/book?as=`}
+          href={`/book?stylist=${stylist.slug}${clientSlug ? `&as=${clientSlug}` : ""}`}
           className="mt-3 flex items-center justify-center gap-1 border-t border-ink-200 bg-paper py-2.5 text-xs font-medium text-brand hover:bg-brand hover:text-white"
         >
           Book with {stylist.name.split(" ")[0]}

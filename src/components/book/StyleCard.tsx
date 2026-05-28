@@ -6,9 +6,15 @@ import Link from "next/link";
 import { computePricing, formatDuration } from "@/lib/catalog";
 import { CATEGORY_PALETTES, type Style } from "@/lib/gallery";
 
-type Props = { style: Style };
+type Props = {
+  style: Style;
+  // Optional client-slug from the surrounding gallery / row. When present,
+  // we propagate it as `?as=` so persona context (rebook banner, try-on
+  // CTA, contact-form pre-fill) survives the tap from any tile.
+  asClient?: string;
+};
 
-export default function StyleCard({ style }: Props) {
+export default function StyleCard({ style, asClient }: Props) {
   const [start, end] = CATEGORY_PALETTES[style.categorySlug];
   const { price, durationMin } = computePricing(
     style.serviceSlug,
@@ -16,9 +22,13 @@ export default function StyleCard({ style }: Props) {
     style.defaultAddOns,
   );
 
+  const href = asClient
+    ? `/book/style/${style.slug}?as=${asClient}`
+    : `/book/style/${style.slug}`;
+
   return (
     <Link
-      href={`/book/style/${style.slug}`}
+      href={href}
       className="group flex flex-col overflow-hidden rounded-xl border border-ink-200 bg-white transition-shadow hover:shadow-lg"
     >
       <div

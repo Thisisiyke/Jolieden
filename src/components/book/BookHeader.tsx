@@ -3,14 +3,24 @@
 // Sticky top header for the /book surface. Cart count comes from the store,
 // so this is a client component. Layout stays a Server Component and just
 // renders this on top of {children}.
+//
+// The "Your appointments" link is hidden for anonymous visitors and
+// dynamic per-persona when ?as= is present (read via useSearchParams).
+// The cart link forwards to /book/checkout (cart is implicit; the route
+// at /book/cart just redirects).
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ShoppingBag, ExternalLink } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useShallow } from "zustand/react/shallow";
 
 export default function BookHeader() {
   const cartCount = useStore(useShallow((s) => s.cart.lines.length));
+  const params = useSearchParams();
+  const asClient = params.get("as") || undefined;
+
+  const cartHref = asClient ? `/book/cart?as=${asClient}` : "/book/cart";
 
   return (
     <header className="sticky top-0 z-30 border-b border-ink-200 bg-ink-900 text-white">
@@ -19,19 +29,24 @@ export default function BookHeader() {
           <span className="font-mono text-[11px] uppercase tracking-wider">← Demo Hub</span>
         </Link>
         <div className="hidden flex-1 justify-center sm:flex">
-          <Link href="/book" className="font-serif text-base tracking-[0.18em] text-white/90 hover:text-white">
+          <Link
+            href={asClient ? `/book?as=${asClient}` : "/book"}
+            className="font-serif text-base tracking-[0.18em] text-white/90 hover:text-white"
+          >
             JOLIEDEN
           </Link>
         </div>
         <div className="flex items-center gap-3">
+          {asClient && (
+            <Link
+              href={`/me/${asClient}/bookings`}
+              className="hidden items-center gap-1.5 text-white/70 hover:text-white sm:inline-flex"
+            >
+              Your appointments <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+            </Link>
+          )}
           <Link
-            href="/me/aaliyah-j/bookings"
-            className="hidden items-center gap-1.5 text-white/70 hover:text-white sm:inline-flex"
-          >
-            Your appointments <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-          </Link>
-          <Link
-            href="/book/cart"
+            href={cartHref}
             className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-white hover:bg-white/20"
           >
             <ShoppingBag className="h-4 w-4" />

@@ -73,7 +73,7 @@ export default async function ClientBookingsListPage({
         {upcoming.length === 0 ? (
           <div className="rounded-lg border border-dashed border-ink-300 bg-white p-4 text-center text-xs text-ink-500">
             Nothing booked yet.{" "}
-            <Link href="/book" className="text-brand underline">
+            <Link href={`/book?as=${clientSlug}`} className="text-brand underline">
               Book a visit
             </Link>
           </div>

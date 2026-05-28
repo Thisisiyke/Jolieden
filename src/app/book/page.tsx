@@ -14,12 +14,17 @@ const isCategorySlug = (v: string | undefined): v is CategorySlug =>
 export default async function BookGalleryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ as?: string; category?: string }>;
+  searchParams: Promise<{ as?: string; category?: string; stylist?: string }>;
 }) {
   const params = await searchParams;
   const client = params.as ? resolveClient(params.as) : undefined;
   const category = isCategorySlug(params.category) ? params.category : undefined;
-  const styles = category ? stylesByCategory(category) : STYLES;
+  const stylistSlug = params.stylist;
+  // Stylist filter (from "Book with X" CTA on /book/stylist/[slug])
+  let styles = category ? stylesByCategory(category) : STYLES;
+  if (stylistSlug) {
+    styles = styles.filter((s) => s.stylistSlug === stylistSlug);
+  }
   const popular = popularStyles().slice(0, 4);
   const lastAppt = client ? appointmentsForClient(client.slug).find((a) => a.status === "completed") : undefined;
 
@@ -63,7 +68,7 @@ export default async function BookGalleryPage({
             <h2 className="mb-3 font-serif text-xl font-semibold text-brand">Most booked</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {popular.map((s) => (
-                <StyleCard key={s.id} style={s} />
+                <StyleCard key={s.id} style={s} asClient={client?.slug} />
               ))}
             </div>
           </section>
@@ -76,12 +81,18 @@ export default async function BookGalleryPage({
           </h2>
           {styles.length === 0 ? (
             <div className="rounded-xl border border-dashed border-ink-300 bg-white p-8 text-center text-sm text-ink-500">
-              Nothing seeded for this category yet — photos arrive in P6.
+              <p>Nothing seeded for this category yet — photos arrive in P6.</p>
+              <Link
+                href={`/book/waitlist${client ? `?as=${client.slug}` : ""}`}
+                className="mt-3 inline-block rounded-md bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-700"
+              >
+                Join the waitlist for this category
+              </Link>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {styles.map((s) => (
-                <StyleCard key={s.id} style={s} />
+                <StyleCard key={s.id} style={s} asClient={client?.slug} />
               ))}
             </div>
           )}
@@ -102,7 +113,7 @@ export default async function BookGalleryPage({
               </p>
             </div>
             <Link
-              href="/book/stylists"
+              href={`/book/stylists${client ? `?as=${client.slug}` : ""}`}
               className="shrink-0 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
             >
               See the team

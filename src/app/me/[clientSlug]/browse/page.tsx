@@ -5,11 +5,11 @@ import { resolveClient } from "@/lib/personas";
 import { popularStyles, CATEGORY_PALETTES, type Style } from "@/lib/gallery";
 import { CATEGORIES } from "@/lib/catalog";
 
-function StyleThumb({ style }: { style: Style }) {
+function StyleThumb({ style, clientSlug }: { style: Style; clientSlug: string }) {
   const [start, end] = CATEGORY_PALETTES[style.categorySlug];
   return (
     <Link
-      href={`/book/style/${style.slug}?as=`}
+      href={`/book/style/${style.slug}?as=${clientSlug}`}
       className="group block overflow-hidden rounded-2xl border border-ink-200 bg-white"
     >
       <div
@@ -66,7 +66,7 @@ export default async function BrowsePage({
 
       {/* Search affordance — wired to /book search later */}
       <Link
-        href="/book"
+        href={`/book?as=${clientSlug}`}
         className="flex items-center gap-2 rounded-full border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-500 hover:border-brand"
       >
         <Search className="h-4 w-4" />
@@ -95,7 +95,7 @@ export default async function BrowsePage({
             Most booked
           </h2>
           <Link
-            href="/book"
+            href={`/book?as=${clientSlug}`}
             className="font-mono text-[10px] uppercase tracking-wider text-brand hover:underline"
           >
             See all
@@ -104,7 +104,7 @@ export default async function BrowsePage({
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
           {featured.map((s) => (
             <div key={s.id} className="w-[140px] shrink-0">
-              <StyleThumb style={s} />
+              <StyleThumb style={s} clientSlug={clientSlug} />
             </div>
           ))}
         </div>

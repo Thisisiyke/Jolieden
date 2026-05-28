@@ -16,7 +16,13 @@ function categoryFromService(name: string): "braids" | "natural" | "silk-press" 
   return "treatments";
 }
 
-function JourneyTile({ entry }: { entry: HairJourneyEntry }) {
+function JourneyTile({
+  entry,
+  clientSlug,
+}: {
+  entry: HairJourneyEntry;
+  clientSlug: string;
+}) {
   const stylist = entry.stylistSlug
     ? resolveStylist(entry.stylistSlug)
     : stylistByName(entry.serviceName);
@@ -61,7 +67,7 @@ function JourneyTile({ entry }: { entry: HairJourneyEntry }) {
         )}
         <div className="mt-3">
           <Link
-            href="/book"
+            href={`/book?as=${clientSlug}`}
             className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-brand hover:underline"
           >
             <RefreshCcw className="h-3 w-3" /> Rebook this
@@ -102,7 +108,7 @@ export default async function ClientJourneyPage({
             Your hair journey starts after your first visit.
           </p>
           <Link
-            href="/book"
+            href={`/book?as=${clientSlug}`}
             className="mt-3 inline-block rounded-md bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-700"
           >
             Book your first
@@ -111,7 +117,7 @@ export default async function ClientJourneyPage({
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {entries.map((e) => (
-            <JourneyTile key={e.id} entry={e} />
+            <JourneyTile key={e.id} entry={e} clientSlug={clientSlug} />
           ))}
         </div>
       )}

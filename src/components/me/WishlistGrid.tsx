@@ -26,7 +26,7 @@ export default function WishlistGrid({ clientSlug, allStyles }: Props) {
           Tap the heart on any style in the gallery to add it here.
         </p>
         <Link
-          href="/book"
+          href={`/book?as=${clientSlug}`}
           className="mt-3 inline-block rounded-md bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-700"
         >
           Browse styles
@@ -42,7 +42,7 @@ export default function WishlistGrid({ clientSlug, allStyles }: Props) {
         return (
           <Link
             key={s.id}
-            href={`/book/style/${s.slug}`}
+            href={`/book/style/${s.slug}?as=${clientSlug}`}
             className="block overflow-hidden rounded-2xl border border-ink-200 bg-white"
           >
             <div

@@ -11,9 +11,18 @@ type Props = {
   eyebrow?: string;
   styles: Style[];
   seeAllHref?: string;
+  // Client slug for persona propagation — keeps try-on + rebook banner alive
+  // when the row is rendered inside the /me surface.
+  clientSlug?: string;
 };
 
-export default function PhotoRow({ title, eyebrow, styles, seeAllHref }: Props) {
+export default function PhotoRow({
+  title,
+  eyebrow,
+  styles,
+  seeAllHref,
+  clientSlug,
+}: Props) {
   if (styles.length === 0) return null;
   return (
     <section>
@@ -39,10 +48,13 @@ export default function PhotoRow({ title, eyebrow, styles, seeAllHref }: Props) 
       <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {styles.map((s) => {
           const [start, end] = CATEGORY_PALETTES[s.categorySlug];
+          const href = clientSlug
+            ? `/book/style/${s.slug}?as=${clientSlug}`
+            : `/book/style/${s.slug}`;
           return (
             <Link
               key={s.id}
-              href={`/book/style/${s.slug}`}
+              href={href}
               className="block w-[140px] shrink-0 snap-start"
             >
               <div

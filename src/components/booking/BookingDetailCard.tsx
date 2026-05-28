@@ -34,6 +34,10 @@ type View = "client" | "stylist";
 
 type Props = {
   appointmentId: string;
+  // Client persona for the "Rebook the same" deep link + receipt link.
+  // Only required when view === "client"; for stylist view we don't
+  // care about the client's persona slug.
+  clientSlug?: string;
   view: View;
 };
 
@@ -291,7 +295,7 @@ function StylistStateSection({
 
 // ───────────────────── card ─────────────────────
 
-export default function BookingDetailCard({ appointmentId, view }: Props) {
+export default function BookingDetailCard({ appointmentId, view, clientSlug }: Props) {
   const appt = useStore((s) => s.appointments[appointmentId]);
   const setAppointmentStatus = useStore((s) => s.setAppointmentStatus);
   const [notes, setNotes] = useState<string[]>([]);
@@ -433,12 +437,30 @@ export default function BookingDetailCard({ appointmentId, view }: Props) {
       )}
 
       {view === "client" && appt.status === "completed" && (
-        <Link
-          href="/book"
-          className="flex w-full items-center justify-center gap-1.5 rounded-md border border-brand bg-white py-2.5 text-sm font-medium text-brand hover:bg-brand hover:text-white"
-        >
-          <RefreshCcw className="h-3.5 w-3.5" /> Rebook the same
-        </Link>
+        <div className="grid grid-cols-2 gap-2">
+          {clientSlug && (
+            <Link
+              href={`/me/${clientSlug}/receipts/${appt.id}`}
+              className="flex items-center justify-center gap-1.5 rounded-md border border-ink-200 bg-white py-2.5 text-sm font-medium text-ink-700 hover:border-brand"
+            >
+              View receipt
+            </Link>
+          )}
+          <Link
+            href={
+              clientSlug
+                ? `/book?as=${clientSlug}&rebook=${appt.id}`
+                : "/book"
+            }
+            className={
+              clientSlug
+                ? "flex items-center justify-center gap-1.5 rounded-md bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+                : "flex w-full items-center justify-center gap-1.5 rounded-md border border-brand bg-white py-2.5 text-sm font-medium text-brand hover:bg-brand hover:text-white"
+            }
+          >
+            <RefreshCcw className="h-3.5 w-3.5" /> Rebook the same
+          </Link>
+        </div>
       )}
     </div>
   );

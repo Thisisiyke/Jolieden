@@ -42,7 +42,7 @@ export default async function CheckinPage({
           <QrCode className="mx-auto h-7 w-7 text-ink-400" />
           <p className="mt-3 text-sm text-ink-900">No upcoming visit on the books.</p>
           <Link
-            href="/book"
+            href={`/book?as=${client.slug}`}
             className="mt-3 inline-block rounded-md bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-700"
           >
             Book a visit

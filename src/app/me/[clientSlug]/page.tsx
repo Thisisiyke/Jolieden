@@ -431,18 +431,20 @@ export default async function ClientHomePage({
         title={recentJourney ? `Like your last ${recentJourney.serviceName.toLowerCase()}` : "Picked for you"}
         eyebrow="✨ Inspired by your style"
         styles={inspirations}
-        seeAllHref="/book"
+        seeAllHref={`/book?as=${clientSlug}`}
+        clientSlug={clientSlug}
       />
 
       {/* Stylist spotlight */}
-      {spotlight && <StylistSpotlight stylist={spotlight} />}
+      {spotlight && <StylistSpotlight stylist={spotlight} clientSlug={clientSlug} />}
 
       {/* Trending */}
       <PhotoRow
         title="Trending this month"
         eyebrow="🔥 Most booked at Jolieden"
         styles={trending}
-        seeAllHref="/book"
+        seeAllHref={`/book?as=${clientSlug}`}
+        clientSlug={clientSlug}
       />
 
       {/* Personalized care follow-up, keyed to the client's last service.
