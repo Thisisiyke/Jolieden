@@ -84,11 +84,14 @@ A salon day with this scope: front-desk staff check clients in, the calendar sho
 - Multi-location (Phase 3)
 - Hair journey timeline (Phase 3)
 - Wishlist (Phase 3)
-- Rewards / loyalty (Diéssou said Don't Need — confirm permanently dropped)
-- Memberships (Don't Need)
+- **Rewards / loyalty** — Diéssou marked "Don't Need" (uses Stripe discounts). Prototype contains a Rewards UI for stakeholder demos; **production v1 does NOT include it.** Schema includes `clients.lifetime_spend_cents` for tier hints in case Diéssou reverses, but no surfaces are built.
+- **Memberships** — Same. Prototype has a Membership screen for demo; production v1 ships without it.
+- **Referral program** — Diéssou marked "Optional." **Production v1 does NOT include it.** Database has `referral_links` + `referral_redemptions` tables so we can add it without a migration later, but no UI is built.
 - Marketing campaigns / email blast (Don't Need — uses third-party tools)
 - Try-on / AR (P+1)
 - Community feature (P+1)
+
+**The Excel coverage table in [README.md](../README.md) marks the prototype-built UI for these as `R` (real implementation).** That's about the **prototype** showing the surface for stakeholder buy-in, not the production scope. If Diéssou reverses on any of these, **add an extra 2–3 weeks per surface** to wire it up; they're not in the Phase 1 estimate.
 
 ---
 
@@ -230,9 +233,32 @@ Goal: **Atlanta and Houston pop-ups onboard. Premium features land.**
 
 ---
 
+## Team & ownership split
+
+The 2-engineer estimate below assumes this split. **Confirm with the dev shop / Diéssou before kickoff.**
+
+| Role | Owns | Headcount | Reports to |
+|---|---|---|---|
+| **Senior full-stack lead** | Architecture decisions, data model + migrations, Postgres RPCs, RLS policies, Stripe Connect integration, AI Concierge prompt + tools, infra (Vercel + Supabase + Cloudflare R2), CI/CD | 1 FTE | Diéssou (functionally) |
+| **Mid full-stack** | Next.js operator app + booking web, Twilio plumbing, Boulevard importer, Stripe Terminal integration, basic Realtime subscriptions, integration tests | 1 FTE | Lead |
+| **Mobile engineer (Phase 2)** | React Native + Expo apps (`/me` + `/pro`), shared package boundaries, push notifications, native camera/AR, App Store submissions | 1 FTE starting Phase 2 wk 1 | Lead |
+| **Designer** | Figma source-of-truth for any UI not already in prototype, design tokens audit, `/owner/knowledge` editor UX, accessibility review | 0.5 FTE Phase 1; 0.25 FTE Phase 2+ | Diéssou |
+| **PM / launch lead** | Sprint planning, 10DLC + Apple/Play registration, Boulevard migration scheduling, Diéssou stakeholder cadence, QA coordination | 0.5 FTE | Diéssou |
+| **AI specialist (advisory)** | Eval suite authoring + tuning, knowledge base structuring with Diéssou, prompt iterations, multi-language quality | 0.25 FTE Phase 2 onward | Lead |
+
+**Total Phase 1:** 2 FTE + 0.5 design + 0.5 PM = ~3 FTE-weeks per week.
+**Total Phase 2:** 3 FTE + 0.25 design + 0.5 PM + 0.25 AI = ~4 FTE-weeks per week.
+**Total Phase 3:** Same as Phase 2 plus rotating onboarding support.
+
+### What the dev shop should NOT staff
+
+- Backend infra ops — Supabase + Vercel are managed; no DevOps role until 10k+ MAU.
+- Separate iOS / Android engineers — RN + Expo means one mobile eng covers both.
+- Separate QA engineer in Phase 1 — leads + mids self-test via the test pyramid (§12.5 in ARCHITECTURE.md). Add a dedicated QA in Phase 3.
+
 ## Budget anchors (rough)
 
-For a 2-engineer team (1 senior full-stack + 1 mid full-stack) + 1 designer (part-time) + project management overhead:
+For the team above:
 
 | Phase | Duration | Engineering cost | Infra/services cost |
 |---|---|---|---|

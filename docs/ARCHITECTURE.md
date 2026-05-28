@@ -12,6 +12,8 @@
 | Concern | Recommendation |
 |---|---|
 | Web stack | Next.js 16 (App Router, Turbopack) + React 19 + TypeScript |
+| Web component library | **shadcn/ui** (Radix primitives + Tailwind) + the prototype's hand-built drawers/selects extracted to `packages/ui-web` |
+| Mobile UI library | **Tamagui** (cross-platform tokens + animations, share `packages/tokens`) |
 | Database | Postgres via **Supabase** (managed, RLS, auth, storage, realtime in one) |
 | Mobile | **React Native + Expo** (reuse TS types from the web; ship to App Store / Play) |
 | AI Concierge | **Anthropic Claude** (tool-use) + RAG over salon docs |
@@ -85,6 +87,20 @@ All web surfaces share a single Next.js codebase and database. Mobile apps consu
 │   Native modules: camera, push (Expo Notifications), AR (P+1)        │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+### Component library + design tokens
+
+| Layer | Decision | Rationale |
+|---|---|---|
+| Web primitives | **shadcn/ui** (copy-in pattern over Radix + Tailwind) | Owns the source code, no runtime lock-in, plays well with Tailwind v4 tokens. |
+| Web salon-specific components | Extract from prototype into `packages/ui-web` | The hand-built `Drawer`, `CustomSelect`, `StaffDropdown`, `BookingDetailCard`, `MobileFrame` carry product knowledge; rewriting them is waste. |
+| Mobile primitives | **Tamagui** | Cross-platform (RN + web fallback), reads the same design tokens as Tailwind via a small shim, performance-tuned animations native to React Native. |
+| Design tokens (shared) | `packages/tokens` exports both a Tailwind config (web) and a Tamagui config (mobile) | Brand colors + typography stay in one source of truth. |
+| Icons | `lucide-react` (web) + `@expo/vector-icons` (mobile, lucide subset) | Already used in prototype. |
+| Forms | `react-hook-form` + `zod` resolvers | Standard, validated by Vercel templates. |
+| Tables (operator) | `@tanstack/react-table` | The reports + clients DB need sorting/filtering at scale. |
+
+**The CLAUDE.md prototype-only rule** ("Don't reach for shadcn unless the primitive you need isn't already in src/components") **does NOT apply to the production build.** It exists because the prototype is a single-purpose demo where pulling in shadcn would have been over-engineering. Production should adopt shadcn primitives as the default and lift the hand-built ones into `packages/ui-web` for the salon-specific compositions.
 
 ### Why these choices
 
@@ -165,7 +181,13 @@ Trade-off: simpler schema, faster v1 ship, but you can't query "every visit that
 
 ### 3.2 Core tables (Postgres DDL sketch)
 
-> All tables include `id uuid pk default gen_random_uuid()`, `created_at`, `updated_at`, `location_id uuid fk` for tenancy, and RLS policies.
+> **Standard columns on every domain table** (omitted from individual definitions below for brevity):
+> - `id uuid primary key default gen_random_uuid()`
+> - `org_id uuid not null references organizations(id)` — the top-level tenant. Required on every domain table for RLS consistency, even when single-org today.
+> - `location_id uuid not null references locations(id)` — for location-scoped data. Omit only on tables that are explicitly org-wide (`gift_cards`, `referral_links`, `staff` — staff can work multiple locations via `staff_locations`).
+> - `created_at timestamptz not null default now()`
+> - `updated_at timestamptz not null default now()` (with a trigger to auto-update)
+> - RLS enabled with policies per §3.3.
 
 #### `clients`
 | Column | Type | Notes |
@@ -594,6 +616,44 @@ What needs to be live, what can be polled:
 
 Supabase Realtime publishes Postgres WAL events to subscribed clients via WebSocket. Cheap and natively integrated with RLS.
 
+### 7.1 Channel + topic naming
+
+| Topic | Subscribed by | Filter | Payload |
+|---|---|---|---|
+| `appointments:location:<location_id>` | Operator app (Front Desk, Calendar), `/manage/floor`, `/pro` Today | RLS via `location_id` | Appointment row changes (INSERT/UPDATE/DELETE) |
+| `conversations:location:<location_id>` | Operator Messages | RLS via `location_id` | Conversation state changes (`ai_state`, last message) |
+| `messages:conversation:<conversation_id>` | Operator Messages (when thread open) | RLS via conversation participants | New `messages` rows |
+| `assistance:location:<location_id>` | `/pro` (on-floor staff) | Server-side push (not WAL) | `{client_id, type, summary}` |
+| `escalations:staff:<staff_id>` | `/pro/.../inbox` for that stylist | RLS via assigned_staff_id | Conversation escalated to me |
+| `notifications:client:<client_id>` | `/me` mobile app | RLS via client_id | Birthday alert, appointment ready, AI replied |
+| `goals:location:<location_id>` | `/pro` Today (owner + stylist view) | RLS via location_id | Daily/weekly revenue updates |
+
+### 7.2 RLS interaction (the sharp edge)
+
+Supabase Realtime filters fire **on the publish side via RLS**, not in the client filter. This means:
+
+- The `appointments:location:NYC` channel only broadcasts a row to a client if the client's JWT passes the RLS policy for that appointment's `location_id`.
+- A staff member with multi-location access sees all their locations' channels.
+- **Do not rely on client-side `filter()` in the `.subscribe()` call for security** — it's defense-in-depth only.
+
+### 7.3 Channel lifecycle
+
+- Open on page mount / route transition.
+- Close on unmount or route exit.
+- Use a connection-pool helper (one WS per logged-in user, multiplex topics) to avoid 5+ WebSocket connections per operator session.
+- Hibernate (close all) when tab is backgrounded for >5 min; re-open on focus.
+
+### 7.4 Non-Realtime push (Expo Notifications)
+
+For mobile apps when the app is backgrounded:
+
+- AI escalations to stylist → Expo Push
+- Birthday wishes from clients → Expo Push
+- "Your stylist is ready" client arrival → Expo Push
+- Repair report submitted → Expo Push to Diéssou
+
+Triggered server-side from Next.js API routes via Expo's HTTP API. Tokens stored in `staff_devices` and `client_devices` tables.
+
 ---
 
 ## 8. Integrations
@@ -780,6 +840,89 @@ Doesn't include people. With Diéssou's 3 locations, infrastructure scales sub-l
 | Accessibility | WCAG 2.1 AA for operator + /book; AA for mobile (where Apple/Android allow) |
 | Browser support | Chrome/Safari/Edge last 2 versions; iOS 15+; Android 10+ |
 | Localization | en-US (Day 1), fr-FR (Day 1 — for braiders), wolof (Phase 2) |
+
+---
+
+## 12.5 Test infrastructure
+
+Production tests are not optional. The clickable prototype ships without tests by design; production does not.
+
+### 12.5.1 Test pyramid
+
+| Layer | Tool | What it covers | Run on |
+|---|---|---|---|
+| Unit | **Vitest** | `packages/domain` business logic — rewards calc, next-visit recommendation, care-tip selection, modifier price computation, persona resolution | Every commit |
+| RLS fuzz | **pgTAP** + custom harness | For every domain table: create row as Location A's staff → assert Location B's staff cannot SELECT/UPDATE/DELETE | Every commit + nightly |
+| Postgres RPC | **pgTAP** | `book_appointment` concurrency (race condition: two clients book the same slot), `complete_appointment` (atomic charge + payout), credit-ledger over-apply | Every commit |
+| API route integration | **Vitest** + msw + Supabase test DB | `POST /api/twilio/inbound` signature validation, replay rejection, persistence; `POST /api/book/*` happy + error paths | Every commit |
+| E2E | **Playwright** | 8 critical user flows (see §12.5.3) | Every PR |
+| Mobile E2E | **Maestro** | Login → Home → Browse → Book → Confirm; QR check-in; report repair | Nightly |
+| AI eval suite | **Custom Vitest runner** | 200+ scenarios from [`docs/ai-eval-corpus.json`](./ai-eval-corpus.json); see [AI_CONCIERGE.md §10.1](./AI_CONCIERGE.md#101-eval-suite) | On prompt change + nightly |
+| Load | **k6** | Booking RPC at 50 req/s, Twilio inbound at 20 req/s | Pre-launch + quarterly |
+| Visual regression | **Chromatic** (Storybook) | `packages/ui-web` components | Every PR touching UI packages |
+
+### 12.5.2 RLS fuzz harness (example)
+
+```sql
+-- supabase/tests/rls_appointments.sql
+begin;
+select plan(8);
+
+-- Create two locations + one staff per location
+insert into locations (id, org_id, name, short_name, address, city, state, zip, phone, hours_json, timezone)
+values
+  ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000000', 'A', 'A', 'a', 'a', 'NY', '00000', '0', '{}', 'America/New_York'),
+  ('22222222-2222-2222-2222-222222222222', '00000000-0000-0000-0000-000000000000', 'B', 'B', 'b', 'b', 'NY', '00000', '0', '{}', 'America/New_York');
+
+-- ... (staff, client, appointment setup with location_id = A)
+
+-- Switch session to staff B; expect zero rows
+set local role authenticated;
+set local request.jwt.claim.sub to 'staff_b_uuid';
+
+select is(
+  (select count(*) from appointments),
+  0::bigint,
+  'staff B cannot see appointments in location A'
+);
+
+-- Attempted UPDATE should fail
+prepare attempt_update as
+  update appointments set status='cancelled' where id='appt_in_a';
+select throws_ok('execute attempt_update', '42501', 'permission denied for table appointments');
+
+select * from finish();
+rollback;
+```
+
+This harness runs against a fresh local Supabase instance in CI. **Required for every new domain table.**
+
+### 12.5.3 Playwright E2E happy paths (Phase 1)
+
+1. Operator: Log in → see Front Desk kanban with today's appointments → drag confirmed → arrived → mark active → complete with payment.
+2. Operator: Search palette (Cmd+K) → "Aaliyah" → jump to client profile → view history.
+3. Operator: Calendar → create new appointment → save → appears on grid.
+4. Operator: Messages → reply manually to an open thread → send → message persisted.
+5. Booking web: From `booking.jolieden.com/book` → browse gallery → pick style → configure modifiers → checkout → Stripe Elements deposit → confirmation page.
+6. Booking web: Online waitlist form → submit → success.
+7. Kiosk: Phone number entry → match client → photo confirmation → arrive.
+8. Sales: Open drawer → record pay-in → count drawer → reconcile → variance shown.
+
+Phase 2 adds AI-driven SMS flows (mock Twilio); Phase 3 adds mobile flows via Maestro.
+
+### 12.5.4 Test data
+
+- Seed scripts: `scripts/seed_test.ts` populates a known fixture set per test run.
+- Hermetic: every test creates + tears down its own data; no shared state.
+- Faker: `@faker-js/faker` for names, phones (E.164 with NANP region), addresses.
+- AI conversations: corpus lives at `docs/ai-eval-corpus.json` (see Appendix E in this doc, and AI_CONCIERGE.md §10.1).
+
+### 12.5.5 Coverage targets
+
+- `packages/domain`: 95% line coverage (it's pure logic, no excuse).
+- API routes: 80% line coverage with 100% of error paths exercised.
+- E2E: every Phase 1 user-facing flow has at least one test.
+- Mobile E2E: every critical client flow has at least one test by Phase 2 end.
 
 ---
 

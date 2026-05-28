@@ -171,7 +171,7 @@ src/
 - Don't rename existing operator-app staff (Mame Diarra, Frederick Douglass, Naomi K., etc.) — operator fixtures reference them by name string.
 - Don't change `TODAY` without re-anchoring every fixture date.
 - Don't introduce a second state library. Zustand is it.
-- Don't reach for shadcn unless the primitive you need isn't already in `src/components`. The codebase has hand-built `Drawer`, `CustomSelect`, `StaffDropdown` — extend those.
+- **Prototype rule only**: don't reach for shadcn unless the primitive you need isn't already in `src/components`. The codebase has hand-built `Drawer`, `CustomSelect`, `StaffDropdown` — extend those. This rule applies only to the clickable prototype to keep its dependency surface minimal. **The production build uses shadcn/ui as the default** — see [docs/ARCHITECTURE.md §2](docs/ARCHITECTURE.md#component-library--design-tokens).
 
 ## Phasing (where we are)
 
