@@ -4,6 +4,16 @@
 
 A clickable prototype + spec for **Jolieden's Beauty Bar** (full-service Black hair salon, joliedensbeautybar.com). Replaces the Boulevard booking widget on the website and adds mobile companion apps for clients and stylists.
 
+## 📚 If you're picking up this project for production: start here
+
+This repo is the UI prototype. The production build references three engineering specs:
+
+1. **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — full technical architecture: tech stack, data model + ERD + DDL, API surface, auth + multi-tenancy, real-time, integrations, mobile platform decision, infrastructure + cost, security + compliance, NFRs, 7-phase build plan.
+2. **[docs/AI_CONCIERGE.md](docs/AI_CONCIERGE.md)** — deep-dive on the headline AI SMS feature: system prompt, full tool schemas with examples, RAG knowledge-base structure, escalation logic, Twilio plumbing, worked conversation trace, cost monitoring, testing strategy.
+3. **[docs/MVP_SCOPE.md](docs/MVP_SCOPE.md)** — phasing: Phase 1 (Day-1 cutover, 16 wk) vs Phase 2 (AI + mobile, 12 wk) vs Phase 3 (multi-location + premium, 12 wk), budget anchors, open decisions for Diéssou.
+
+[README.md](README.md) has the full Excel feature coverage audit (every Boulevard + Custom App feature mapped to its prototype route + status).
+
 ## What surfaces live here
 
 Single Next.js repo. Routes prefixed by audience:
