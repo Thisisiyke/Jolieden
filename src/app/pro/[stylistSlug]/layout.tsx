@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { resolveStylist } from "@/lib/personas";
 import { escalationsForStylist } from "@/lib/aiInbox";
 import MobileFrame from "@/components/MobileFrame";
+import MobileSplash from "@/components/MobileSplash";
 import ProTopBar from "@/components/pro/ProTopBar";
 import ProTabBar from "@/components/pro/ProTabBar";
 
@@ -24,6 +25,7 @@ export default async function ProShell({
 
   return (
     <MobileFrame>
+      <MobileSplash kind="pro" />
       <ProTopBar stylist={stylist} />
       <main className="min-h-0 flex-1 overflow-y-auto bg-paper">{children}</main>
       <ProTabBar stylistSlug={stylistSlug} inboxBadge={inboxBadge} />

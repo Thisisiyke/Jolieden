@@ -9,6 +9,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronLeft, Phone, Video, Info, Sparkles } from "lucide-react";
 import clsx from "clsx";
 import { SCENARIOS, type SmsScenario, type SmsTurn } from "@/lib/smsScenarios";
@@ -177,8 +178,14 @@ export default function SmsSimulator() {
           </div>
         </div>
         <div className="flex flex-col items-center px-4 pb-3 pt-1">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-brand to-gold text-sm font-semibold text-white">
-            JD
+          <div className="relative h-12 w-12">
+            <Image
+              src="/jolieden-logo.png"
+              alt="Jolieden"
+              fill
+              sizes="48px"
+              className="object-contain"
+            />
           </div>
           <div className="mt-1 flex items-center gap-1 text-[12px] font-medium text-ink-900">
             Jolieden Beauty Bar

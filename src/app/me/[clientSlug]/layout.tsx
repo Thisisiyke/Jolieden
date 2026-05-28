@@ -5,6 +5,7 @@
 import { notFound } from "next/navigation";
 import { resolveClient } from "@/lib/personas";
 import MobileFrame from "@/components/MobileFrame";
+import MobileSplash from "@/components/MobileSplash";
 import MeTopBar from "@/components/me/MeTopBar";
 import MeTabBar from "@/components/me/MeTabBar";
 
@@ -21,6 +22,7 @@ export default async function MeShell({
 
   return (
     <MobileFrame>
+      <MobileSplash kind="me" />
       <MeTopBar client={client} unreadCount={2} />
       <main className="min-h-0 flex-1 overflow-y-auto bg-paper">{children}</main>
       <MeTabBar clientSlug={clientSlug} />

@@ -7,6 +7,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Scan, Phone, Sparkles, ArrowRight, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { TODAY } from "@/lib/data";
@@ -89,8 +90,18 @@ export default function KioskPage() {
       </div>
 
       <main className="mx-auto flex max-w-3xl flex-1 flex-col items-center justify-center px-6 py-12 text-center">
-        <div className="font-serif text-5xl font-semibold tracking-[0.1em] text-brand">JOLIEDEN</div>
-        <p className="mt-3 font-mono text-[11px] uppercase tracking-wider text-ink-500">
+        <div className="relative h-28 w-28">
+          <Image
+            src="/jolieden-logo.png"
+            alt="Jolieden's Beauty Bar"
+            fill
+            priority
+            sizes="112px"
+            className="object-contain"
+          />
+        </div>
+        <div className="mt-3 font-serif text-3xl font-semibold tracking-[0.1em] text-brand">JOLIEDEN</div>
+        <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-ink-500">
           Welcome — we&apos;ll get you to your stylist
         </p>
 
