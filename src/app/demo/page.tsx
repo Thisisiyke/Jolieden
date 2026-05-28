@@ -182,11 +182,19 @@ const meTiles = (clients: { coldStart?: Client; loyalist?: Client; birthday?: Cl
   const out: Tile[] = [];
   if (clients.coldStart) {
     out.push({
-      href: `/me/${clients.coldStart.slug}`,
+      href: `/onboarding/${clients.coldStart.slug}`,
       persona: { name: clients.coldStart.firstName + " " + clients.coldStart.lastName, role: "Newly downloaded", avatarHue: clients.coldStart.avatarHue },
       badge: { label: "Cold start", tone: "cold" },
       title: "Imani opens the app for the first time",
-      description: "Empty home, one welcome message, suggestion to book her next look. Zero-state UI.",
+      description: "Splash → welcome carousel → SMS verify → hair profile → notifications → her empty home. Full first-launch.",
+    });
+    // Also keep a direct shortcut to her populated home for reviewers who
+    // want to skip the wizard and just see the cold-start home state.
+    out.push({
+      href: `/me/${clients.coldStart.slug}`,
+      badge: { label: "Cold start · home", tone: "cold" },
+      title: "Imani · already past onboarding",
+      description: "Skip the wizard and land directly on her empty-state home with the cold-start welcome card.",
     });
   }
   if (clients.loyalist) {

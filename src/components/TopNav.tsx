@@ -27,7 +27,7 @@ const NAV = [
 ];
 
 // Routes that render their own chrome (no operator TopNav).
-const HIDE_ON_PREFIXES = ["/demo", "/book", "/me", "/pro", "/kiosk"];
+const HIDE_ON_PREFIXES = ["/demo", "/book", "/me", "/pro", "/kiosk", "/onboarding"];
 
 export function TopNav() {
   const pathname = usePathname();
