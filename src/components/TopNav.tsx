@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -12,6 +13,7 @@ import {
 import clsx from "clsx";
 import { NotificationsBell } from "./NotificationsBell";
 import { ProfileMenu } from "./profile/ProfileMenu";
+import SearchPalette from "./SearchPalette";
 
 const NAV = [
   { href: "/", label: "Front Desk" },
@@ -29,6 +31,29 @@ const HIDE_ON_PREFIXES = ["/demo", "/book", "/me", "/pro", "/kiosk"];
 
 export function TopNav() {
   const pathname = usePathname();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // Global Cmd/Ctrl+K opens the search palette. Mounted at the TopNav so
+  // it works across every operator route. Skipped on hidden prefixes
+  // (mobile shells render their own chrome).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const isMod = e.metaKey || e.ctrlKey;
+      if (isMod && (e.key === "k" || e.key === "K")) {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      } else if (e.key === "/" && !isMod) {
+        const target = e.target as HTMLElement | null;
+        // Don't hijack "/" when the user is typing in an input/textarea/etc.
+        const tag = target?.tagName?.toLowerCase();
+        if (tag === "input" || tag === "textarea" || target?.isContentEditable) return;
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
   if (HIDE_ON_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
     return null;
@@ -51,10 +76,15 @@ export function TopNav() {
       {/* Search */}
       <button
         type="button"
-        className="px-4 flex items-center text-white/70 hover:text-white"
-        aria-label="Search"
+        onClick={() => setSearchOpen(true)}
+        className="flex items-center gap-2 border-r border-white/10 px-4 text-white/70 hover:text-white"
+        aria-label="Open search"
+        title="Search (Cmd+K)"
       >
         <Search className="h-5 w-5" />
+        <span className="hidden font-mono text-[10px] uppercase tracking-wider lg:inline">
+          ⌘K
+        </span>
       </button>
 
       {/* Nav links */}
@@ -123,6 +153,8 @@ export function TopNav() {
 
         <ProfileMenu />
       </div>
+      {/* Global search palette */}
+      <SearchPalette open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }
