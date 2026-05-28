@@ -12,6 +12,7 @@ import Image from "next/image";
 import {
   ArrowLeft,
   ArrowRight,
+  Cake,
   Camera,
   Heart,
   Sparkles,
@@ -28,15 +29,37 @@ type Step =
   | "carousel"
   | "phone"
   | "verify"
+  | "identity"
   | "profile"
   | "notifications"
   | "success";
 
 type Props = {
   clientSlug: string;
-  firstName: string;
+  // Default values used to pre-fill the wizard inputs (honoring the no-typing
+  // prototype rule). The wizard never *reveals* the name before the identity
+  // step — pre-auth screens use generic copy.
+  defaultFirstName: string;
+  defaultLastName: string;
   defaultPhone: string;
+  defaultBirthdayMonth?: number; // 1..12
+  defaultBirthdayDay?: number; // 1..31
 };
+
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
 
 const CAROUSEL_SLIDES = [
   {
@@ -66,8 +89,11 @@ const TEXTURES = ["3A", "3B", "3C", "4A", "4B", "4C", "Type 2", "Mix"] as const;
 
 export default function OnboardingWizard({
   clientSlug,
-  firstName,
+  defaultFirstName,
+  defaultLastName,
   defaultPhone,
+  defaultBirthdayMonth,
+  defaultBirthdayDay,
 }: Props) {
   const router = useRouter();
 
@@ -77,6 +103,17 @@ export default function OnboardingWizard({
   const [phone, setPhone] = useState(defaultPhone);
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [verifying, setVerifying] = useState(false);
+  // Identity — captured AFTER phone verification. Pre-filled so the
+  // viewer can advance with one tap (no-typing prototype rule), but the
+  // pre-auth welcome + carousel screens never reveal the name.
+  const [firstName, setFirstName] = useState(defaultFirstName);
+  const [lastName, setLastName] = useState(defaultLastName);
+  const [birthdayMonth, setBirthdayMonth] = useState<number>(
+    defaultBirthdayMonth ?? 1,
+  );
+  const [birthdayDay, setBirthdayDay] = useState<number>(
+    defaultBirthdayDay ?? 1,
+  );
   const [texture, setTexture] = useState<string>("4B");
   const [scalp, setScalp] = useState("None");
   const [allergies, setAllergies] = useState("None on file");
@@ -106,7 +143,7 @@ export default function OnboardingWizard({
             />
           </div>
           <p className="mt-10 max-w-xs text-base leading-relaxed text-ink-700">
-            Hi {firstName}. Welcome to the tribe.
+            Welcome to the tribe.
             <br />
             Let&apos;s get you set up in under a minute.
           </p>
@@ -208,7 +245,7 @@ export default function OnboardingWizard({
             <ArrowLeft className="h-5 w-5" />
           </button>
           <span className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-            Step 1 of 3
+            Step 1 of 4
           </span>
           <button
             type="button"
@@ -263,7 +300,7 @@ export default function OnboardingWizard({
       setVerifying(true);
       window.setTimeout(() => {
         setVerifying(false);
-        setStep("profile");
+        setStep("identity");
       }, 900);
     };
     const onDigit = (i: number, v: string) => {
@@ -295,7 +332,7 @@ export default function OnboardingWizard({
             <ArrowLeft className="h-5 w-5" />
           </button>
           <span className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-            Step 1 of 3
+            Step 1 of 4
           </span>
           <span />
         </header>
@@ -354,8 +391,12 @@ export default function OnboardingWizard({
     );
   }
 
-  // Profile collection
-  if (step === "profile") {
+  // Identity — collect the basics now that the phone is verified. This is
+  // where the app actually learns who the user is; nothing before this step
+  // ever surfaces firstName on screen.
+  if (step === "identity") {
+    const daysInMonth = new Date(2000, birthdayMonth, 0).getDate();
+    const dayOptions = Array.from({ length: daysInMonth }, (_, i) => i + 1);
     return (
       <div className="flex h-full flex-col">
         <header className="flex items-center justify-between px-4 pt-4">
@@ -368,7 +409,112 @@ export default function OnboardingWizard({
             <ArrowLeft className="h-5 w-5" />
           </button>
           <span className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-            Step 2 of 3
+            Step 2 of 4
+          </span>
+          <span />
+        </header>
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pt-8 pb-6">
+          <div>
+            <h2 className="font-serif text-2xl font-semibold text-ink-900">
+              Who&apos;s booking?
+            </h2>
+            <p className="mt-1 text-sm text-ink-700">
+              We&apos;ll greet you by name when you check in and surprise you
+              on your birthday week.
+            </p>
+          </div>
+
+          <section className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+                First name
+              </label>
+              <input
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Imani"
+                className="mt-1 w-full rounded-md border border-ink-300 bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+                Last name
+              </label>
+              <input
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Webb"
+                className="mt-1 w-full rounded-md border border-ink-300 bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none"
+              />
+            </div>
+          </section>
+
+          <section>
+            <label className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+              <Cake className="mr-0.5 inline h-3 w-3" /> Birthday
+            </label>
+            <p className="mt-0.5 text-[11px] text-ink-500">
+              Birthday week unlocks a comp Wash &amp; Blow + bonus points.
+            </p>
+            <div className="mt-2 grid grid-cols-2 gap-3">
+              <select
+                value={birthdayMonth}
+                onChange={(e) => setBirthdayMonth(parseInt(e.target.value, 10))}
+                className="w-full rounded-md border border-ink-300 bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none"
+              >
+                {MONTHS.map((m, i) => (
+                  <option key={m} value={i + 1}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={birthdayDay}
+                onChange={(e) => setBirthdayDay(parseInt(e.target.value, 10))}
+                className="w-full rounded-md border border-ink-300 bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none"
+              >
+                {dayOptions.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-ink-500">
+              📅 Year stays private — only month + day are stored
+            </p>
+          </section>
+        </div>
+        <div className="border-t border-ink-200 bg-white px-4 py-3">
+          <button
+            type="button"
+            onClick={() => setStep("profile")}
+            disabled={!firstName.trim() || !lastName.trim()}
+            className="flex w-full items-center justify-center gap-1.5 rounded-md bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+          >
+            Continue
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Profile collection
+  if (step === "profile") {
+    return (
+      <div className="flex h-full flex-col">
+        <header className="flex items-center justify-between px-4 pt-4">
+          <button
+            type="button"
+            onClick={() => setStep("identity")}
+            aria-label="Back"
+            className="-ml-1 flex items-center gap-0.5 text-brand"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <span className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+            Step 3 of 4
           </span>
           <button
             type="button"
@@ -483,7 +629,7 @@ export default function OnboardingWizard({
             <ArrowLeft className="h-5 w-5" />
           </button>
           <span className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-            Step 3 of 3
+            Step 4 of 4
           </span>
           <span />
         </header>

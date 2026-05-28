@@ -22,8 +22,11 @@ export default async function OnboardingPage({
     <MobileFrame>
       <OnboardingWizard
         clientSlug={clientSlug}
-        firstName={client.firstName}
+        defaultFirstName={client.firstName}
+        defaultLastName={client.lastName}
         defaultPhone={client.phone}
+        defaultBirthdayMonth={client.birthdayMonth}
+        defaultBirthdayDay={client.birthdayDay}
       />
     </MobileFrame>
   );

@@ -170,7 +170,6 @@ export const APPOINTMENTS: Appointment[] = [
 
   // ---------- TOMORROW (Apr 15) ----------
   mk({ date: TOMORROW, client: "Destiny Rivera", pronouns: "She/Her", start: "10:00am", end: "1:00pm", service: "Knotless Braids", staff: "Mame Diarra", price: 235, status: "unconfirmed", isNewClient: true, aiBooked: true, aiBookedFromThreadId: "c-ai-1" }),
-  mk({ date: TOMORROW, client: "Imani Webb", start: "2:00pm", end: "4:00pm", service: "Color Refresh", staff: "Naomi K.", price: 140, status: "confirmed" }),
   mk({ date: TOMORROW, client: "Janelle Ford", pronouns: "She/Her", start: "5:00pm", end: "7:00pm", service: "Silk Press", staff: "Frederick Douglass", price: 145, status: "confirmed", aiBooked: true, aiBookedFromThreadId: "c-ai-3" }),
   mk({ date: TODAY, client: "Yvonne Adams", pronouns: "She/Her", start: "4:30pm", end: "6:00pm", service: "Wash & Style", staff: "Fatou Ciss", price: 95, status: "confirmed", aiBooked: true, aiBookedFromThreadId: "c-ai-4" }),
 
@@ -300,25 +299,11 @@ export const APPOINTMENTS: Appointment[] = [
     bookedBy: "Naomi B.",
     bookedAt: "Apr 13th @ 7:48pm",
   }),
-  // Imani's first appointment with one of the cast stylists.
-  mk({
-    date: "2026-04-22",
-    client: "Imani Webb",
-    pronouns: "She/Her",
-    phone: "(646) 555-0199",
-    start: "1:00pm",
-    end: "5:00pm",
-    service: "Honey Balayage",
-    serviceDetail: "Custom honey + warm caramel, glaze finish",
-    staff: "Dieynaba D.",
-    price: 320,
-    showRate: 100,
-    avgVisit: 140,
-    numVisits: 2,
-    status: "confirmed",
-    bookedBy: "Imani W.",
-    bookedAt: "Apr 14th @ 4:12pm",
-  }),
+  // Imani has no pre-seeded appointments — she's the cold-start persona, so
+  // her home screen at /me/imani-w should land empty until she completes the
+  // onboarding wizard and books through /book. (Past data was removed
+  // alongside the operator-side TOMORROW Color Refresh because it
+  // contradicted the "first download" narrative.)
 ];
 
 export const STATUS_COLUMNS: { id: ApptStatus; label: string }[] = [
@@ -500,7 +485,14 @@ export const CLIENTS: Client[] = [
   _mkClient(32, { firstName: "Brianna", lastName: "Lee", phone: "(347) 555-0144", email: "brianna.lee@example.com", emailOptIn: true, textOptIn: true, visits: 3, lastVisit: "2026-04-13", totalSpend: 435, referralSource: "Google", birthdayMonth: 6 }),
   _mkClient(33, { firstName: "Chanel", lastName: "Morris", phone: "(718) 555-0119", email: "chanel.m@example.com", emailOptIn: true, textOptIn: true, visits: 11, lastVisit: "2026-04-13", totalSpend: 1980, membership: "Silver", referralSource: "Referral", birthdayMonth: 10 }),
   _mkClient(34, { firstName: "Destiny", lastName: "Rivera", phone: "(917) 555-0106", email: "destiny.r@example.com", emailOptIn: true, textOptIn: true, visits: 0, tags: ["New"], referralSource: "Instagram", birthdayMonth: 1, totalSpend: 0 }),
-  _mkClient(35, { firstName: "Imani", lastName: "Webb", phone: "(646) 555-0199", email: "imani.webb@example.com", emailOptIn: true, textOptIn: false, visits: 2, totalSpend: 280, referralSource: "Walk-in", birthdayMonth: 11 }),
+  // Cold-start canon — Imani is brand-new to the app. visits/totalSpend stay
+  // zero until she completes the onboarding wizard and books through /book.
+  // firstName / lastName / birthdayMonth here represent what she'll enter in
+  // the wizard's identity step (pre-filled to honor the no-typing rule);
+  // they're not used by any operator-facing celebration logic. Tagged "New"
+  // so operator surfaces (clients list, AI inbox escalation thread) still
+  // flag her correctly.
+  _mkClient(35, { firstName: "Imani", lastName: "Webb", phone: "(646) 555-0199", email: "imani.webb@example.com", emailOptIn: true, textOptIn: false, visits: 0, totalSpend: 0, referralSource: "Walk-in", tags: ["New"], birthdayMonth: 11, birthdayDay: 22 }),
   _mkClient(36, { firstName: "Janelle", lastName: "Ford", phone: "(347) 555-0155", email: "janelle.f@example.com", emailOptIn: true, textOptIn: true, visits: 5, lastVisit: "2026-04-08", totalSpend: 725, referralSource: "Google", birthdayMonth: 4 }),
   _mkClient(37, { firstName: "Leslie", lastName: "Brooks", phone: "(646) 555-0121", email: "leslie.brooks@example.com", emailOptIn: false, textOptIn: false, visits: 1, lastVisit: "2026-02-05", totalSpend: 235, referralSource: "Yelp", birthdayMonth: 9 }),
   _mkClient(38, { firstName: "Erica", lastName: "Suarez", phone: "(917) 555-0146", email: "erica.s@example.com", emailOptIn: true, textOptIn: true, visits: 6, lastVisit: "2026-03-28", totalSpend: 840, referralSource: "Instagram", birthdayMonth: 7 }),
