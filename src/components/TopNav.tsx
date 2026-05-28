@@ -65,7 +65,7 @@ export function TopNav() {
       <div className="flex items-center pl-5 pr-5 border-r border-white/10">
         <Image
           src="/logo-white.png"
-          alt="Jolieden's Beauty Bar"
+          alt="Jolieden"
           width={500}
           height={250}
           className="h-11 w-auto object-contain"

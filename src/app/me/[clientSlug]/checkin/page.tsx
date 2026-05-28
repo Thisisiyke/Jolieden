@@ -154,7 +154,7 @@ export default async function CheckinPage({
 
       <div className="flex items-center justify-center gap-1 text-xs text-ink-500">
         <MapPin className="h-3 w-3" />
-        Jolieden Beauty Bar · New York
+        Jolieden · New York
       </div>
 
       <QrCheckinClient appointmentId={next.id} clientSlug={client.slug} />

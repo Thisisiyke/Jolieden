@@ -40,22 +40,21 @@ export default function MobileSplash({ kind }: { kind: "me" | "pro" }) {
       }
       aria-hidden="true"
     >
-      <div className="relative h-32 w-32">
+      <div className="relative h-12 w-56">
         <Image
-          src="/jolieden-logo.png"
+          src="/logo-black.png"
           alt=""
           fill
           priority
-          sizes="128px"
+          sizes="224px"
           className="object-contain"
         />
       </div>
-      <div className="mt-6 font-serif text-2xl font-semibold tracking-[0.16em] text-brand">
-        JOLIEDEN
-      </div>
-      <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-500">
-        {kind === "pro" ? "Stylist" : "Beauty Bar"}
-      </div>
+      {kind === "pro" && (
+        <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-500">
+          Stylist
+        </div>
+      )}
       {/* Loading hairline */}
       <div className="mt-10 h-0.5 w-24 overflow-hidden rounded-full bg-ink-200">
         <div

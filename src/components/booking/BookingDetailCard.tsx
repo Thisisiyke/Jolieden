@@ -400,7 +400,7 @@ export default function BookingDetailCard({ appointmentId, view, clientSlug }: P
 
       <div className="flex items-center gap-1 text-xs text-ink-500">
         <MapPin className="h-3 w-3" />
-        Jolieden Beauty Bar · New York
+        Jolieden · New York
       </div>
 
       {/* Status-specific section */}

@@ -392,7 +392,7 @@ export default function DemoHubPage() {
         <div className="mx-auto max-w-6xl px-6 py-10">
           <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-500">
             <span className="rounded-full bg-brand px-2 py-0.5 text-white">Prototype</span>
-            <span>Jolieden's Beauty Bar · client + stylist surfaces</span>
+            <span>Jolieden · client + stylist surfaces</span>
           </div>
           <h1 className="mt-4 font-serif text-4xl font-semibold text-brand sm:text-5xl">
             Walk-through hub

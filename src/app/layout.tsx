@@ -4,7 +4,7 @@ import { TopNav } from "../components/TopNav";
 import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "Jolieden's Beauty Bar",
+  title: "Jolieden",
   description: "Front of house operations",
 };
 

@@ -24,7 +24,7 @@ import { getStyle } from "@/lib/gallery";
 
 // ───────────────────── time slot generation ─────────────────────
 
-const ADDR = "Jolieden Beauty Bar · NYC";
+const ADDR = "Jolieden · NYC";
 
 function nextNDays(start: Date, n: number): { iso: string; label: string; dow: string }[] {
   const out: { iso: string; label: string; dow: string }[] = [];

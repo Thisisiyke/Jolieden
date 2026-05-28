@@ -95,22 +95,16 @@ export default function OnboardingWizard({
     return (
       <div className="flex h-full flex-col items-center justify-between bg-gradient-to-b from-paper via-brand-50 to-paper px-6 pb-8 pt-16">
         <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <div className="relative h-32 w-32">
+          <div className="relative h-12 w-56">
             <Image
-              src="/jolieden-logo.png"
+              src="/logo-black.png"
               alt="Jolieden"
               fill
               priority
-              sizes="128px"
+              sizes="224px"
               className="object-contain"
             />
           </div>
-          <h1 className="mt-6 font-serif text-3xl font-semibold tracking-[0.18em] text-brand">
-            JOLIEDEN
-          </h1>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.24em] text-ink-500">
-            Beauty Bar
-          </p>
           <p className="mt-10 max-w-xs text-base leading-relaxed text-ink-700">
             Hi {firstName}. Welcome to the tribe.
             <br />

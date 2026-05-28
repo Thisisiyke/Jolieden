@@ -7,7 +7,7 @@ export default function BookHero() {
     <section className="border-b border-ink-200 bg-paper">
       <div className="mx-auto flex max-w-6xl flex-col items-center px-6 py-10 text-center">
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-500">
-          Beauty Bar · NYC
+          NYC
         </div>
         <h1 className="mt-3 font-serif text-4xl font-semibold tracking-[0.08em] text-brand sm:text-5xl">
           JOLIEDEN

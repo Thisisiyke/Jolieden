@@ -10,9 +10,6 @@ export default function BookFooter() {
       <div className="mx-auto grid max-w-6xl gap-6 px-6 py-8 text-sm text-ink-700 sm:grid-cols-3">
         <div>
           <div className="font-serif text-base font-semibold text-brand">JOLIEDEN</div>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-ink-500">
-            Beauty Bar
-          </p>
           <p className="mt-3 text-xs text-ink-500">
             New levels of self-confidence and self-expression are possible.
           </p>

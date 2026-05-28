@@ -188,7 +188,7 @@ export default function SmsSimulator() {
             />
           </div>
           <div className="mt-1 flex items-center gap-1 text-[12px] font-medium text-ink-900">
-            Jolieden Beauty Bar
+            Jolieden
             <Info className="h-3 w-3 text-[#007aff]" />
           </div>
           <div className="font-mono text-[10px] uppercase tracking-wider text-ink-500">

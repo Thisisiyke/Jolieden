@@ -62,7 +62,7 @@ export default async function ReceiptPage({
       <section className="rounded-2xl border border-ink-200 bg-white p-5 text-center">
         <div className="font-serif text-2xl font-semibold tracking-[0.1em] text-brand">JOLIEDEN</div>
         <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-ink-500">
-          Beauty Bar · New York
+          New York
         </div>
         <div className="mt-1 font-mono text-[10px] text-ink-500">
           joliedensbeautybar.com · (646) 555-0100

@@ -264,7 +264,7 @@ export default async function ProfilePage({
       </Section>
 
       <p className="pt-2 text-center font-mono text-[10px] text-ink-500">
-        Jolieden Beauty Bar · v0.9
+        Jolieden · v0.9
       </p>
     </div>
   );
