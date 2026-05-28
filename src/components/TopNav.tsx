@@ -7,6 +7,7 @@ import {
   Search,
   Clock,
   Settings,
+  LayoutGrid,
 } from "lucide-react";
 import clsx from "clsx";
 import { NotificationsBell } from "./NotificationsBell";
@@ -23,8 +24,15 @@ const NAV = [
   { href: "/manage", label: "Manage" },
 ];
 
+// Routes that render their own chrome (no operator TopNav).
+const HIDE_ON_PREFIXES = ["/demo", "/book", "/me", "/pro"];
+
 export function TopNav() {
   const pathname = usePathname();
+
+  if (HIDE_ON_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+    return null;
+  }
 
   return (
     <header className="h-14 bg-brand text-white flex items-stretch shrink-0">
@@ -81,6 +89,14 @@ export function TopNav() {
 
       {/* Right cluster */}
       <div className="flex items-center gap-1 pr-3">
+        <Link
+          href="/demo"
+          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[12px] font-medium text-white/70 hover:bg-white/10 hover:text-white"
+          title="Demo Hub"
+        >
+          <LayoutGrid className="h-4 w-4" />
+          <span>Demo Hub</span>
+        </Link>
         <Link
           href="/timeclock"
           aria-label="Time clock"
