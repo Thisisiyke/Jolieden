@@ -6,6 +6,8 @@ import {
   Calendar as CalendarIcon,
   ChevronRight,
   Sparkles,
+  Trophy,
+  Target,
   Users as UsersIcon,
 } from "lucide-react";
 import {
@@ -163,6 +165,47 @@ export default async function StylistTodayPage({
           </section>
         )}
 
+        {/* Salon-wide daily goals */}
+        <section className="rounded-2xl border border-ink-200 bg-white p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
+              <Target className="h-3 w-3" /> 🎯 Daily goal
+            </div>
+            <span className="font-mono text-[10px] text-ink-500">
+              {fmtCurrency(mockRevenueToday)} / $3,500
+            </span>
+          </div>
+          <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-paper">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-brand to-gold"
+              style={{ width: `${Math.min(100, Math.round((mockRevenueToday / 3500) * 100))}%` }}
+            />
+          </div>
+          <p className="mt-2 text-xs text-ink-700">
+            {Math.max(0, 3500 - mockRevenueToday) > 0
+              ? `$${3500 - mockRevenueToday} to hit today's revenue goal. ${arrivedCount + activeCount} clients still in the salon.`
+              : "Today's goal already met. Anything past this is bonus."}
+          </p>
+        </section>
+
+        {/* Employee of the Month */}
+        <section className="overflow-hidden rounded-2xl border border-gold/40 bg-gradient-to-br from-gold-soft via-paper to-brand-50 p-4">
+          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
+            <Trophy className="h-3 w-3" /> 🏆 Employee of the month · April
+          </div>
+          <div className="mt-2 flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand text-base font-semibold text-white">
+              OD
+            </div>
+            <div className="min-w-0">
+              <div className="text-base font-semibold text-ink-900">Oumou D.</div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+                42 services · 96% rebook rate · 4.97 avg
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section className="rounded-2xl border border-ink-200 bg-paper p-4">
           <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
             <UsersIcon className="h-3 w-3" /> Floor map · stylist status
@@ -193,6 +236,29 @@ export default async function StylistTodayPage({
       </header>
 
       {nextAppt && <NextUpCard appt={nextAppt} slug={stylistSlug} />}
+
+      {/* Personal daily goal */}
+      <section className="rounded-2xl border border-ink-200 bg-white p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
+            <Target className="h-3 w-3" /> 🎯 Today&apos;s goal
+          </div>
+          <span className="font-mono text-[10px] text-ink-500">
+            {myToday.filter((a) => a.status === "completed").length} / {Math.max(myToday.length, 3)} services
+          </span>
+        </div>
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-paper">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-brand to-gold"
+            style={{
+              width: `${Math.min(100, (myToday.filter((a) => a.status === "completed").length / Math.max(myToday.length, 3)) * 100)}%`,
+            }}
+          />
+        </div>
+        <p className="mt-2 text-xs text-ink-700">
+          Stay on pace for today&apos;s commission target. Quick-add a walk-in if you have a gap.
+        </p>
+      </section>
 
       {/* Today schedule preview */}
       {myToday.length > 0 && (
