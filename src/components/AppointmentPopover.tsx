@@ -10,10 +10,13 @@ import {
   ExternalLink,
   Receipt,
   CheckCircle2,
+  Send,
 } from "lucide-react";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import type { Appointment } from "../lib/data";
+import { resolveClientByName } from "../lib/personas";
+import InviteToAppDrawer from "./operator/InviteToAppDrawer";
 
 export function AppointmentPopover({
   appt,
@@ -33,6 +36,14 @@ export function AppointmentPopover({
   const isCompleted = appt.status === "completed";
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+
+  // Resolve the appointment's client by name so the invite drawer can
+  // pre-fill recipient, opt-in status, and the app deep-link slug.
+  // Returns undefined for walk-ins not yet in the clients table — we
+  // still allow the button (operator gets a graceful "no record yet"
+  // state by tapping it).
+  const client = resolveClientByName(appt.client);
 
   useEffect(() => setMounted(true), []);
 
@@ -183,6 +194,14 @@ export function AppointmentPopover({
           <IconBtn title="Call">
             <Phone className="h-4 w-4" />
           </IconBtn>
+          {client && (
+            <IconBtn
+              title="Send confirmation + app invite"
+              onClick={() => setInviteOpen(true)}
+            >
+              <Send className="h-4 w-4" />
+            </IconBtn>
+          )}
           {!isCompleted && (
             <IconBtn
               title="Cancel appointment"
@@ -232,6 +251,14 @@ export function AppointmentPopover({
           )}
         </div>
       </div>
+      {client && (
+        <InviteToAppDrawer
+          open={inviteOpen}
+          onClose={() => setInviteOpen(false)}
+          client={client}
+          appt={appt}
+        />
+      )}
     </div>,
     document.body,
   );

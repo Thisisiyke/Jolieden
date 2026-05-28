@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Mail, MessageCircle, Phone } from "lucide-react";
 import { CLIENTS } from "../../../lib/data";
 import { Avatar } from "../../../components/Avatar";
+import ClientActions from "../../../components/operator/ClientActions";
 
 export default async function ClientProfilePage({
   params,
@@ -43,6 +44,9 @@ export default async function ClientProfilePage({
                   {c.membership} member
                 </span>
               )}
+            </div>
+            <div className="mt-3">
+              <ClientActions client={c} />
             </div>
           </div>
         </div>
