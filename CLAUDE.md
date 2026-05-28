@@ -11,6 +11,8 @@ This repo is the UI prototype. The production build references three engineering
 1. **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** — full technical architecture: tech stack, data model + ERD + DDL, API surface, auth + multi-tenancy, real-time, integrations, mobile platform decision, infrastructure + cost, security + compliance, NFRs, 7-phase build plan.
 2. **[docs/AI_CONCIERGE.md](docs/AI_CONCIERGE.md)** — deep-dive on the headline AI SMS feature: system prompt, full tool schemas with examples, RAG knowledge-base structure, escalation logic, Twilio plumbing, worked conversation trace, cost monitoring, testing strategy.
 3. **[docs/MVP_SCOPE.md](docs/MVP_SCOPE.md)** — phasing: Phase 1 (Day-1 cutover, 16 wk) vs Phase 2 (AI + mobile, 12 wk) vs Phase 3 (multi-location + premium, 12 wk), budget anchors, open decisions for Diéssou.
+4. **[docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)** — screen-by-screen reference: every derived value (e.g. "how is 'Trending this month' calculated?", "when does the birthday hero fire?") with its prototype rule + production-replacement note. Use this for product-level questions you'd otherwise have to reverse-engineer from code.
+5. **[docs/ai-eval-corpus.json](docs/ai-eval-corpus.json)** — 32-case starter regression suite for the AI Concierge, ready to plug into the Vitest runner.
 
 [README.md](README.md) has the full Excel feature coverage audit (every Boulevard + Custom App feature mapped to its prototype route + status).
 
