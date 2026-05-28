@@ -11,7 +11,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronRight, Clock, CheckCircle2 } from "lucide-react";
+import { ChevronRight, Clock, CheckCircle2, CreditCard, Apple, Shield } from "lucide-react";
 import clsx from "clsx";
 import { useStore } from "@/lib/store";
 import {
@@ -88,6 +88,11 @@ export default function CheckoutFlow() {
   const [lastName, setLastName] = useState(defaultLast);
   const [phone, setPhone] = useState(defaultPhone);
   const [email, setEmail] = useState(defaultEmail);
+
+  // Payment method (mock — wired in for visual completeness only).
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "apple" | "klarna" | "afterpay">(
+    "card",
+  );
 
   // Rebook hydration: if cart is empty + rebookId points to a real appointment,
   // synthesize a cart line from it.
@@ -353,6 +358,70 @@ export default function CheckoutFlow() {
               className="mt-1 w-full rounded-md border border-ink-200 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none"
             />
           </div>
+        </div>
+      </section>
+
+      {/* Payment */}
+      <section className="mt-6 space-y-3 rounded-2xl border border-ink-200 bg-white p-5">
+        <h2 className="text-base font-semibold text-ink-900">Payment</h2>
+        <p className="text-xs text-ink-500">
+          A <strong className="text-ink-900">$25 deposit</strong> holds your spot. Applied at checkout, fully refundable if you cancel 48h+ in advance.
+        </p>
+        <div className="space-y-2">
+          {[
+            {
+              id: "card" as const,
+              label: "Visa •• 4242",
+              sub: "Card on file",
+              icon: <CreditCard className="h-4 w-4" />,
+            },
+            {
+              id: "apple" as const,
+              label: "Apple Pay",
+              sub: "Touch ID at checkout",
+              icon: <Apple className="h-4 w-4" />,
+            },
+            {
+              id: "klarna" as const,
+              label: "Klarna · 4 payments",
+              sub: `4 × $${Math.round(line.computedPrice / 4)}, no interest`,
+              icon: <span className="font-mono text-[10px] font-semibold">K</span>,
+            },
+            {
+              id: "afterpay" as const,
+              label: "Afterpay · 4 payments",
+              sub: `4 × $${Math.round(line.computedPrice / 4)}, no interest`,
+              icon: <span className="font-mono text-[10px] font-semibold">A</span>,
+            },
+          ].map((opt) => {
+            const active = paymentMethod === opt.id;
+            return (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setPaymentMethod(opt.id)}
+                className={clsx(
+                  "flex w-full items-center gap-3 rounded-md border p-3 text-left transition-colors",
+                  active
+                    ? "border-brand bg-brand/5"
+                    : "border-ink-200 bg-white hover:border-brand",
+                )}
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-paper text-ink-700">
+                  {opt.icon}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium text-ink-900">{opt.label}</div>
+                  <div className="text-xs text-ink-500">{opt.sub}</div>
+                </div>
+                {active && <CheckCircle2 className="h-4 w-4 text-brand" />}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex items-start gap-2 rounded-md border border-ink-200 bg-paper p-3 text-xs text-ink-700">
+          <Shield className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
+          Payments processed by Stripe. We never see your card number.
         </div>
       </section>
 
