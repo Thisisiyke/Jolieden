@@ -2,25 +2,29 @@
 
 // Bottom tab bar for the /me client app. Sticks to the bottom of the mobile
 // shell; active tab highlights when the pathname matches its href.
+// Labels honor the per-client EN/FR locale.
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Search, CalendarHeart, Sparkles, User } from "lucide-react";
 import clsx from "clsx";
+import { useLocale } from "@/lib/store";
+import { t } from "@/lib/i18n";
 
 type Props = { clientSlug: string };
 
 const TABS = [
-  { key: "home", label: "Home", path: "", icon: Home },
-  { key: "browse", label: "Browse", path: "browse", icon: Search },
-  { key: "bookings", label: "Bookings", path: "bookings", icon: CalendarHeart },
-  { key: "journey", label: "Journey", path: "journey", icon: Sparkles },
-  { key: "profile", label: "Profile", path: "profile", icon: User },
+  { key: "home", labelKey: "tab.home", path: "", icon: Home },
+  { key: "browse", labelKey: "tab.browse", path: "browse", icon: Search },
+  { key: "bookings", labelKey: "tab.bookings", path: "bookings", icon: CalendarHeart },
+  { key: "journey", labelKey: "tab.journey", path: "journey", icon: Sparkles },
+  { key: "profile", labelKey: "tab.profile", path: "profile", icon: User },
 ] as const;
 
 export default function MeTabBar({ clientSlug }: Props) {
   const pathname = usePathname() || "";
   const root = `/me/${clientSlug}`;
+  const locale = useLocale(clientSlug);
 
   return (
     <nav
@@ -28,15 +32,15 @@ export default function MeTabBar({ clientSlug }: Props) {
       className="z-30 shrink-0 border-t border-ink-200 bg-white pb-[max(env(safe-area-inset-bottom),0.5rem)] sm:pb-6"
     >
       <ul className="grid grid-cols-5">
-        {TABS.map((t) => {
-          const href = t.path ? `${root}/${t.path}` : root;
+        {TABS.map((tab) => {
+          const href = tab.path ? `${root}/${tab.path}` : root;
           const active =
-            t.path === ""
+            tab.path === ""
               ? pathname === root
               : pathname === href || pathname.startsWith(href + "/");
-          const Icon = t.icon;
+          const Icon = tab.icon;
           return (
-            <li key={t.key} className="flex">
+            <li key={tab.key} className="flex">
               <Link
                 href={href}
                 className={clsx(
@@ -45,7 +49,7 @@ export default function MeTabBar({ clientSlug }: Props) {
                 )}
               >
                 <Icon className="h-5 w-5" />
-                <span>{t.label}</span>
+                <span>{t(tab.labelKey, locale)}</span>
               </Link>
             </li>
           );

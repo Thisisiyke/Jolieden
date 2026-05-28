@@ -11,12 +11,20 @@ import { Scan, Phone, Sparkles, ArrowRight, ArrowLeft, CheckCircle2 } from "luci
 import { useStore } from "@/lib/store";
 import { TODAY } from "@/lib/data";
 
-type Mode = "idle" | "scan" | "phone" | "success";
+type Mode = "idle" | "scan" | "phone" | "confirm" | "success";
+
+type PendingClient = {
+  firstName: string;
+  lastName: string;
+  avatarHue?: number;
+  appointmentId?: string;
+};
 
 export default function KioskPage() {
   const [mode, setMode] = useState<Mode>("idle");
   const [phone, setPhone] = useState("");
   const [arrivedName, setArrivedName] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingClient | null>(null);
 
   const appointments = useStore((s) => s.appointments);
   const clients = useStore((s) => s.clients);
@@ -41,8 +49,22 @@ export default function KioskPage() {
           (a.status === "confirmed" || a.status === "unconfirmed"),
       )
       .sort((a, b) => a.start.localeCompare(b.start))[0];
-    if (next) setAppointmentStatus(next.id, "arrived");
-    setArrivedName(`${client.firstName} ${client.lastName}`);
+    // Move to photo confirmation step first — kiosk shows the saved photo
+    // and asks "Is this you?" before flipping the status.
+    setPending({
+      firstName: client.firstName,
+      lastName: client.lastName,
+      avatarHue: client.avatarHue,
+      appointmentId: next?.id,
+    });
+    setMode("confirm");
+  };
+
+  const confirmPending = () => {
+    if (!pending) return;
+    if (pending.appointmentId) setAppointmentStatus(pending.appointmentId, "arrived");
+    setArrivedName(`${pending.firstName} ${pending.lastName}`);
+    setPending(null);
     setMode("success");
   };
 
@@ -50,6 +72,7 @@ export default function KioskPage() {
     setMode("idle");
     setPhone("");
     setArrivedName(null);
+    setPending(null);
   };
 
   return (
@@ -139,15 +162,74 @@ export default function KioskPage() {
             <button
               type="button"
               onClick={() => {
-                setArrivedName("Aaliyah Jackson");
+                const aaliyah = Object.values(clients).find((c) => c.slug === "aaliyah-j");
                 const next = Object.values(appointments).find((a) => a.client === "Aaliyah Jackson" && a.status === "confirmed");
-                if (next) setAppointmentStatus(next.id, "arrived");
-                setMode("success");
+                setPending({
+                  firstName: aaliyah?.firstName || "Aaliyah",
+                  lastName: aaliyah?.lastName || "Jackson",
+                  avatarHue: aaliyah?.avatarHue,
+                  appointmentId: next?.id,
+                });
+                setMode("confirm");
               }}
               className="mt-8 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
             >
               Demo · simulate scan
             </button>
+          </>
+        )}
+
+        {mode === "confirm" && pending && (
+          <>
+            <h1 className="mt-10 font-serif text-3xl font-semibold text-ink-900">
+              Is this you?
+            </h1>
+            <p className="mt-3 max-w-xl text-base text-ink-700">
+              Quick check before we mark you arrived.
+            </p>
+            {/* Big avatar tile */}
+            <div className="mt-10 flex flex-col items-center gap-3">
+              <div
+                className="flex h-40 w-40 items-center justify-center rounded-full text-5xl font-semibold text-white shadow-lg"
+                style={{
+                  background: `linear-gradient(135deg, hsl(${pending.avatarHue ?? 320}, 55%, 38%), hsl(${((pending.avatarHue ?? 320) + 30) % 360}, 60%, 50%))`,
+                }}
+              >
+                {pending.firstName[0]}
+                {pending.lastName[0]}
+              </div>
+              <div className="text-2xl font-semibold text-ink-900">
+                {pending.firstName} {pending.lastName}
+              </div>
+              {pending.appointmentId && (
+                <div className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+                  Booking · {pending.appointmentId.toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="mt-10 flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setPending(null);
+                  setMode("idle");
+                }}
+                className="rounded-md border border-ink-200 bg-white px-5 py-3 text-sm font-medium text-ink-700 hover:border-brand"
+              >
+                Not me
+              </button>
+              <button
+                type="button"
+                onClick={confirmPending}
+                className="flex items-center gap-2 rounded-md bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-700"
+              >
+                Yes, that&apos;s me
+                <CheckCircle2 className="h-4 w-4" />
+              </button>
+            </div>
+            <p className="mt-6 font-mono text-[10px] uppercase tracking-wider text-ink-500">
+              Saved from your most recent visit · helps avoid mix-ups
+            </p>
           </>
         )}
 

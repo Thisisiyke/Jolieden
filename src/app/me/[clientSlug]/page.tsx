@@ -9,6 +9,7 @@ import {
   RefreshCcw,
   Sparkles,
   Trophy,
+  CalendarClock,
 } from "lucide-react";
 import {
   resolveClient,
@@ -272,6 +273,61 @@ function ColdStartWelcome({ client }: { client: Client }) {
 
 // ───────────────────── page ─────────────────────
 
+// Parses "Every 8 wks" → 8. Returns null if unparseable.
+function parseWeeks(freq?: string): number | null {
+  if (!freq) return null;
+  const m = freq.match(/(\d+)\s*wk/i);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+function formatPretty(d: Date): string {
+  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
+// Returns the recommended next-visit date as a friendly string, or null if
+// we don't have enough info to recommend.
+function nextRecommendedVisit(lastAppt?: Appointment): { date: string; weeks: number } | null {
+  if (!lastAppt) return null;
+  const weeks = parseWeeks(lastAppt.avgFrequency) || 8; // default 8wks for braids
+  const last = new Date(lastAppt.date + "T00:00:00");
+  const next = new Date(last);
+  next.setDate(next.getDate() + weeks * 7);
+  // If next is already in the past, skip the banner.
+  if (next < new Date(TODAY + "T00:00:00")) return null;
+  return { date: formatPretty(next), weeks };
+}
+
+function NextVisitCard({
+  client,
+  rec,
+}: {
+  client: Client;
+  rec: { date: string; weeks: number };
+}) {
+  return (
+    <Link
+      href={`/book?as=${client.slug}`}
+      className="group flex items-center gap-3 rounded-2xl border border-ink-200 bg-gradient-to-br from-paper to-brand-50 p-4 hover:border-brand"
+    >
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
+        <CalendarClock className="h-4 w-4" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="font-mono text-[10px] uppercase tracking-wider text-brand">
+          📅 Time for your next visit
+        </div>
+        <div className="mt-0.5 text-sm font-semibold text-ink-900">
+          Recommended: {rec.date}
+        </div>
+        <div className="font-mono text-[10px] text-ink-500">
+          {rec.weeks} wks from your last · matches your usual rhythm
+        </div>
+      </div>
+      <ChevronRight className="h-4 w-4 text-ink-300 group-hover:text-brand" />
+    </Link>
+  );
+}
+
 function pickInspirations(client: Client, allStyles: Style[]): Style[] {
   // Try preferred stylist's work first; fall back to most-popular.
   if (client.preferredStylistSlug) {
@@ -310,6 +366,9 @@ export default async function ClientHomePage({
   const popular = popularStyles();
   const inspirations = pickInspirations(client, popular);
   const trending = popular.slice(0, 6);
+
+  // Compute next-visit recommendation from the most recent completed visit.
+  const nextVisitRec = nextRecommendedVisit(lastCompleted);
 
   const featuredPhoto = popular[0]?.photoUrl;
   const heroCards = buildHeroCards(client, clientSlug, showBirthday, daysToBday, featuredPhoto);
@@ -358,6 +417,10 @@ export default async function ClientHomePage({
 
       {/* Cold-start: welcome */}
       {isColdStart && !lastCompleted && <ColdStartWelcome client={client} />}
+
+      {/* Next-visit reminder — appears when client has a completed visit
+          and the recommended next date is in the future. */}
+      {nextVisitRec && <NextVisitCard client={client} rec={nextVisitRec} />}
 
       {/* Rewards card */}
       <RewardsCard client={client} slug={clientSlug} />

@@ -1,9 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Pencil, CreditCard, Gift, LogOut, ShieldCheck, Trophy, Users, Heart, Wallet, FileSignature, Languages, Crown } from "lucide-react";
+import { ChevronRight, Pencil, CreditCard, Gift, LogOut, ShieldCheck, Trophy, Users, Heart, Wallet, FileSignature, Crown } from "lucide-react";
 import { resolveClient, resolveStylist } from "@/lib/personas";
 import { TODAY } from "@/lib/data";
 import { pointsFor, tierFor } from "@/lib/rewards";
+import LanguageToggle from "@/components/me/LanguageToggle";
 
 function Avatar({ name, hue }: { name: string; hue?: number }) {
   const h = hue ?? 320;
@@ -239,12 +240,7 @@ export default async function ProfilePage({
 
       {/* Language */}
       <Section title="Language">
-        <Row
-          label="App language"
-          value="English"
-          href="#"
-          trailing={<Languages className="h-3.5 w-3.5 text-ink-400" />}
-        />
+        <LanguageToggle clientSlug={client.slug} />
       </Section>
 
       {/* Privacy + account */}
