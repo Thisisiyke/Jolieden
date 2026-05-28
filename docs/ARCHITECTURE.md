@@ -206,13 +206,17 @@ Trade-off: simpler schema, faster v1 ship, but you can't query "every visit that
 | `text_opt_in` | `bool default true` | |
 | `email_opt_in` | `bool default true` | |
 | `marketing_opt_in` | `bool default true` | |
+| `birthday_opt_in` | `bool default true` | controls birthday week SMS + comp gift |
 | `blocked` | `bool default false` | Boulevard "Block client" |
+| `pronouns` | `text` | e.g. "She/Her" — surfaced on profile + at check-in |
 | `notes_md` | `text` | markdown notes |
-| `accommodations` | `jsonb` | structured: scalp, allergies, etc. |
+| `accommodations` | `jsonb` | structured: `{scalp_sensitivities, allergies, texture, drink_preference}` |
 | `tags` | `text[]` | VIP, Loyalist, etc. |
+| `locale` | `text default 'en'` | `'en'` \| `'fr'` — for SMS + app UI language |
 | `referral_code` | `text unique` | for the referral program |
 | `referred_by` | `uuid fk clients(id)` | |
 | `home_location_id` | `uuid fk locations(id)` | primary salon |
+| `next_birthday_at` | `timestamptz` | computed: next occurrence of `birthday_month/day` ≥ now() — see ARCH §A.14 trigger |
 
 #### `appointments`
 | Column | Type | Notes |
@@ -571,6 +575,43 @@ $$;
 
 **Webhook handling** for `account.updated` lives in `app/api/stripe/webhook/route.ts`. Signature verified with `stripe.webhooks.constructEvent` using `STRIPE_WEBHOOK_SECRET` env var.
 
+### 4.4.3 Operator API route inventory
+
+The headline routes in §4.4 cover client + AI surfaces. The operator app has its own family of routes — listed here so a dev knows exactly what file to create for each screen.
+
+| Route | Surface | Inputs | Side effects |
+|---|---|---|---|
+| `POST /api/staff/invite` | `/owner/staff` | `{name, email, phone, role, location_ids[], commission_pct}` | Creates `staff` row + Supabase Auth user + Stripe Connect Express account; emails magic link with embedded onboarding URL |
+| `POST /api/staff/{id}/permissions` | `/owner/permission-groups` | `{permissions: Permission[]}` | Updates `staff.permissions` jsonb; logs to `audit_log` |
+| `POST /api/staff/{id}/deactivate` | `/owner/staff` | `{reason}` | `staff.status = 'disabled'`; existing appointments persist; new bookings blocked |
+| `POST /api/shifts/clock-in` | `/timeclock`, `/kiosk` (staff) | `{staff_id, location_id}` | Inserts `time_clock_entries(type='clock_in')`; updates `shifts.status = 'in_progress'` |
+| `POST /api/shifts/clock-out` | Same | `{staff_id, notes?}` | Mirror — `clock_out` entry + `shifts.status='completed'` |
+| `POST /api/shifts/break/{start,end}` | `/pro` (staff), `/timeclock` | `{staff_id}` | Tracks break minutes; triggers "break ending in 5 min" push when `break_minutes_taken >= allowed - 5` |
+| `POST /api/sales/checkout` | `/sales/order/[uuid]` | `{order_lines[], payment_method, tip_cents, gift_card_codes[], credit_to_apply_cents}` | Stripe charge, gift-card decrement, credit-ledger debit, sends digital receipt SMS |
+| `POST /api/sales/refund` | `/sales/transactions` | `{payment_id, amount_cents, reason}` | Stripe refund (reverses Connect transfer atomically); writes `payments(type='refund')` |
+| `POST /api/sales/void` | `/sales/order/[uuid]` | `{order_id}` | Voids if no Stripe charge yet; refunds if charged |
+| `POST /api/cash-drawer/open` | `/sales/register` | `{starting_cash_cents}` | Inserts `cash_drawers` row with `status='open'` |
+| `POST /api/cash-drawer/{id}/pay-in` | Same | `{amount_cents, note}` | Appends `cash_movements` row |
+| `POST /api/cash-drawer/{id}/pay-out` | Same | `{amount_cents, note}` | Mirror |
+| `POST /api/cash-drawer/{id}/close` | Same | `{counted_cents}` | Computes variance; updates drawer; if variance > $5, flags for manager review |
+| `POST /api/clients/{id}/merge` | `/clients` MergeClientsDrawer | `{target_client_id, source_client_id}` | Moves appointments, payments, journey entries; deletes source; logs to `audit_log` |
+| `POST /api/clients/{id}/block` | Client profile | `{reason}` | `clients.blocked = true`; client can't book online (server rejects) |
+| `POST /api/clients/{id}/note` | Client profile | `{note_md}` | Appends to `clients.notes_md` with timestamp |
+| `POST /api/gift-cards/issue` | `/sales/gift-cards` | `{recipient_phone, recipient_email?, value_cents, payment_method}` | Stripe charge for purchaser, gift_cards row, SMS code to recipient |
+| `POST /api/gift-cards/redeem` | `/sales/checkout` | `{code, amount_cents, order_id}` | Validates balance, decrements, creates `gift_card_redemptions` row |
+| `POST /api/packages/sell` | `/sales/memberships` (if enabled) | `{package_id, client_id, payment_method}` | Charges + creates package balance |
+| `POST /api/forms/intake/submit` | `/me/.../intake` | Intake form payload + signature data URL | Uploads signature PNG to R2; writes `client_intake_forms` row with audit metadata (IP, user agent, policy version) |
+| `POST /api/reports/{slug}/generate` | `/reports/*` | Filter params + date range | Returns JSON for dashboard; large reports return job ID + email when ready |
+| `POST /api/reports/{slug}/export` | Same | Format (`csv` \| `xlsx` \| `pdf`) | Generates file in R2; signed URL emailed |
+| `POST /api/marketing/audience/preview` | `/clients` Audiences | Filter params | Returns count + sample, no side effect |
+| `POST /api/marketing/blast/send` | `/marketing/blast` | `{audience_id, template_id, send_at?}` | Schedules via Twilio (SMS) or Resend (email); logs to `marketing_sends` |
+| `POST /api/knowledge/document` | `/owner/knowledge` | `{title, body_md, category}` | Writes `knowledge_documents`; triggers re-embedding via Supabase Edge Function |
+| `POST /api/knowledge/test` | Same | `{prompt, draft_doc?}` | Runs the Claude eval against a draft prompt + doc without committing |
+
+**Reads use PostgREST** — no need for custom read endpoints. The exceptions are:
+- `GET /api/reports/{slug}` — when the report SQL is complex enough to warrant a custom route
+- `GET /api/booking/availability?service_slug=…` — public, no auth (for the marketing-site booking flow)
+
 ### 4.5 Public unauthenticated endpoints (marketing site → booking flow)
 
 - `GET /api/book/quote?service=<slug>&modifiers=<json>` — no auth, returns price + duration estimate
@@ -916,7 +957,7 @@ Triggered server-side from Next.js API routes via Expo's HTTP API. Tokens stored
 - All TypeScript types (`Appointment`, `Client`, `Stylist`, `Style`, etc.) → published as `@jolieden/types` internal npm package.
 - Business logic (rewards calculation, next-visit recommendation, AI scenarios, care tips) → published as `@jolieden/domain`.
 - Brand tokens → `@jolieden/tokens` (Tailwind config for web, Tamagui config for RN).
-- Component layouts inform RN screen designs but get rebuilt with NativeWind / Tamagui.
+- Component layouts inform RN screen designs but get rebuilt with **Tamagui** (per §2 component-library decision; NativeWind was considered and rejected because it doesn't carry tokens cross-platform as cleanly).
 
 ### 9.3 Native-only modules needed
 
@@ -1648,6 +1689,9 @@ create table locations (
   phone text not null,
   hours_json jsonb not null,             -- {monday: {open: "09:00", close: "19:00"}, ...}
   timezone text not null default 'America/New_York',
+  tax_rate numeric(5,4) not null default 0.08875, -- 8.875% NYC default; per-location
+  daily_revenue_target_cents bigint,    -- for /pro Today goal card
+  weekly_revenue_target_cents bigint,   -- for /pro Today goal card
   active bool default true,
   flagship_staff_id uuid references staff(id), -- "Diéssou leads NYC"
   google_place_id text,                  -- for review pull
@@ -1655,13 +1699,77 @@ create table locations (
   created_at timestamptz default now()
 );
 
+create table staff (
+  id uuid primary key,                       -- = auth.uid()
+  org_id uuid not null,
+  first_name text not null,
+  last_name text not null,
+  email citext unique not null,
+  phone text not null,                       -- E.164
+  pronouns text,
+  role staff_role not null,                  -- 'owner' | 'manager' | 'stylist' | 'front_desk'
+  permissions jsonb default '[]',            -- Permission[] overrides on top of role defaults
+  specialty text,
+  bio_md text,
+  years_at_salon int,
+  instagram_handle text,
+  avatar_url text,
+  commission_pct numeric(5,4),               -- global default; overridable per-location
+  daily_service_target int,                  -- for /pro Today personal goal card
+  weekly_service_target int,                 -- for /pro Today weekly goal
+  daily_revenue_target_cents bigint,         -- alternative target metric
+  stripe_account_id text unique,
+  stripe_account_status text not null default 'pending_invite',
+  status staff_status not null default 'pending_invite',
+  hired_at date,
+  ended_at date,
+  notes_md text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create type staff_role as enum ('owner', 'manager', 'stylist', 'front_desk');
+create type staff_status as enum ('pending_invite', 'active', 'on_leave', 'disabled');
+
 create table staff_locations (
   staff_id uuid references staff(id),
   location_id uuid references locations(id),
   is_primary bool default false,
-  commission_pct_override numeric,
+  commission_pct_override numeric(5,4),
   primary key (staff_id, location_id)
 );
+```
+
+### A.15 `next_birthday_at` trigger on `clients`
+
+Maintains the computed column referenced by §A.13 + Phase-2 birthday SMS automation. Re-runs on row insert/update and via a nightly cron sweep (handles year rollover).
+
+```sql
+create or replace function compute_next_birthday()
+  returns trigger language plpgsql as $$
+declare
+  v_year int := extract(year from now());
+  v_this_year date := make_date(v_year, new.birthday_month, new.birthday_day);
+begin
+  if new.birthday_month is null or new.birthday_day is null then
+    new.next_birthday_at := null;
+  elsif v_this_year >= current_date then
+    new.next_birthday_at := v_this_year;
+  else
+    new.next_birthday_at := make_date(v_year + 1, new.birthday_month, new.birthday_day);
+  end if;
+  return new;
+end $$;
+
+create trigger clients_next_birthday_at
+  before insert or update of birthday_month, birthday_day on clients
+  for each row execute function compute_next_birthday();
+
+-- Nightly cron handles year-rollover (Dec 31 → Jan 1)
+select cron.schedule('refresh-next-birthday', '0 1 * * *', $$
+  update clients set birthday_month = birthday_month
+  where next_birthday_at < now();  -- forces trigger to recompute
+$$);
 ```
 
 ---

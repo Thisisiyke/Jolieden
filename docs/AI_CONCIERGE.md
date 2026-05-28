@@ -41,6 +41,7 @@ You have access to these tools — call them when needed instead of guessing:
 - commit_booking(client_id, service_slug, staff_id, start_at, modifier_choices?, addon_slugs?) — actually book the appointment
 - lookup_client_history(client_id, limit?) — pull past visits + preferences
 - search_knowledge_base(query) — RAG search of salon policies, prices, hours, prep guides
+- create_waitlist_entry(service_category, date_window, ...) — add client to waitlist when no slots available
 - escalate(reason, summary, suggested_staff_slug?) — hand off to a human
 
 # When to use tools (the rules)
@@ -62,7 +63,7 @@ NEVER:
 Escalate via the escalate tool when:
 - The message contains anger/complaint signals ("upset", "ruined", "wasted", "ridiculous", "refund")
 - The request is for custom pricing (e.g. unusual color request, hybrid services)
-- read_availability returns zero slots AND the client doesn't want waitlist
+- read_availability returns zero slots AND the client declines the waitlist (offer create_waitlist_entry first)
 - The client asks for a refund or cancellation within the 48-hour penalty window
 - The client asks 3+ times and you can't resolve
 - search_knowledge_base returns nothing matching
@@ -160,6 +161,20 @@ Returns:
   "next_available_after_window": "2026-06-07"
 }
 ```
+
+**Availability computation rules** (the slot-finder algorithm):
+
+The implementation finds open slots by subtracting all of the following from each staff member's working hours:
+1. Existing `appointments` in live statuses (`unconfirmed`, `confirmed`, `arrived`, `active`, `completed`) — the same set that's excluded by the `appointments_no_overlap` constraint in [ARCHITECTURE §4.4.1](./ARCHITECTURE.md#441-the-book_appointment-rpc--concurrency-strategy).
+2. `shifts.break_started_at` blocks — if a stylist is on a scheduled break, that range is unavailable.
+3. Hard blocks from `shifts` where `status = 'on_break'` or `status = 'off'`.
+4. Location-level closures from `locations.hours_json` (e.g. Sunday closed) and holiday closures from the `holiday_closures` table.
+
+The algorithm walks each day in `date_window`, generates candidate start times at 15-min intervals within the staff's `shifts.scheduled_start_at`/`scheduled_end_at`, checks `start + service.base_duration_min + processing_time_min` fits before any block, and returns the first 10 slots ordered by:
+- Match score: `(staff_match_weight * preferred_staff_bonus) + (time_match_weight * proximity_to_requested_time)`
+- Ties broken by earliest `start_at`
+
+If the search returns 0 slots: the AI is instructed (system prompt §When to escalate) to offer the waitlist via `create_waitlist_entry` *or* call `read_availability` again with a widened window before escalating.
 
 ### 3.2 `commit_booking`
 
@@ -288,7 +303,56 @@ Returns:
 
 If `chunks.length === 0` or top similarity < 0.6, the AI should call `escalate(reason="unknown", summary="Asked about X — no knowledge base match.")`.
 
-### 3.5 `escalate`
+### 3.5 `create_waitlist_entry`
+
+```json
+{
+  "name": "create_waitlist_entry",
+  "description": "Add the client to the waitlist for a service when no immediate availability exists. Use BEFORE escalating to a human when the client wants something specific and we can offer the waitlist as the next-best option. Returns the queue position estimate.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "client_id": { "type": "string", "description": "UUID from conversation context. Pass null if Unknown caller." },
+      "contact_phone": { "type": "string", "description": "E.164 — used when client_id is null." },
+      "service_category": {
+        "type": "string",
+        "enum": ["braids", "weaves", "silk-press", "natural", "color", "cuts", "treatments"]
+      },
+      "preferred_service_slug": { "type": "string" },
+      "preferred_staff_slug": { "type": "string", "description": "Optional preferred stylist." },
+      "date_window": {
+        "type": "object",
+        "properties": {
+          "from": { "type": "string", "format": "date" },
+          "to":   { "type": "string", "format": "date" }
+        },
+        "required": ["from", "to"]
+      },
+      "time_of_day": {
+        "type": "string",
+        "enum": ["morning", "afternoon", "evening", "any"]
+      }
+    },
+    "required": ["service_category", "date_window"]
+  }
+}
+```
+
+Returns:
+```json
+{
+  "waitlist_entry_id": "uuid",
+  "estimated_queue_position": 3,
+  "estimated_notification_window_days": 5,
+  "expires_at": "2026-06-15T00:00:00Z"
+}
+```
+
+Writes to the `waitlist_entries` table ([ARCHITECTURE Appendix A.12](./ARCHITECTURE.md#a12-waitlist_entries)). Source is set to `'ai_escalation'`. The 15-min cron from that appendix handles notification when a matching slot opens.
+
+After calling this tool, the AI confirms in natural language: *"You're on the waitlist for Saturday morning braids — slot 3 in line. We text you the second something opens. Anything else I can help with?"*
+
+### 3.6 `escalate`
 
 ```json
 {
