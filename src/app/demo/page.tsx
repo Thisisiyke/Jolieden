@@ -181,20 +181,26 @@ const bookTiles = (clients: { coldStart?: Client; loyalist?: Client; birthday?: 
 const meTiles = (clients: { coldStart?: Client; loyalist?: Client; birthday?: Client }): Tile[] => {
   const out: Tile[] = [];
   if (clients.coldStart) {
-    out.push({
-      href: `/onboarding/${clients.coldStart.slug}`,
-      persona: { name: clients.coldStart.firstName + " " + clients.coldStart.lastName, role: "Newly downloaded", avatarHue: clients.coldStart.avatarHue },
-      badge: { label: "Cold start", tone: "cold" },
-      title: "Imani opens the app for the first time",
-      description: "Splash → welcome carousel → SMS verify → hair profile → notifications → her empty home. Full first-launch.",
-    });
-    // Also keep a direct shortcut to her populated home for reviewers who
-    // want to skip the wizard and just see the cold-start home state.
+    // Primary cold-start tile: browse-first. She lands on her empty home
+    // and explores the gallery as a guest — auth fires only when she taps
+    // Confirm on a booking. Pattern matches Booksy / Fresha / StyleSeat /
+    // Sephora / Ulta. Per Baymard, removing forced signup lifts checkout
+    // completion 20-35%.
     out.push({
       href: `/me/${clients.coldStart.slug}`,
-      badge: { label: "Cold start · home", tone: "cold" },
-      title: "Imani · already past onboarding",
-      description: "Skip the wizard and land directly on her empty-state home with the cold-start welcome card.",
+      persona: { name: clients.coldStart.firstName + " " + clients.coldStart.lastName, role: "Just downloaded · browsing", avatarHue: clients.coldStart.avatarHue },
+      badge: { label: "Cold start", tone: "cold" },
+      title: "Imani opens the app for the first time",
+      description: "Browse-first. She lands on the gallery, sees finished looks and prices, no signup wall. Auth fires only when she taps Confirm on a booking.",
+    });
+    // Secondary: the auth flow itself, for reviewers who want to see the
+    // phone-OTP path on its own. In production this would be reached from
+    // the booking-confirm CTA, not as an entry point.
+    out.push({
+      href: `/onboarding/${clients.coldStart.slug}`,
+      badge: { label: "Sign-in flow", tone: "cold" },
+      title: "Imani · phone-OTP sign-in",
+      description: "The 3-screen auth gate (welcome → phone → verify → success). In production this fires from the booking-confirm CTA; here it's surfaced standalone for review.",
     });
   }
   if (clients.loyalist) {

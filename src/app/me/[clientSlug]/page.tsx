@@ -30,6 +30,7 @@ import { tipForService } from "@/lib/careTips";
 import HeroCarousel, { type HeroCard } from "@/components/me/HeroCarousel";
 import PhotoRow from "@/components/me/PhotoRow";
 import StylistSpotlight from "@/components/me/StylistSpotlight";
+import BirthdayNudge from "@/components/me/BirthdayNudge";
 
 // ───────────────────── birthday helpers ─────────────────────
 
@@ -454,6 +455,11 @@ export default async function ClientHomePage({
 
       {/* Cold-start: welcome */}
       {isColdStart && !lastCompleted && <ColdStartWelcome client={client} />}
+
+      {/* Deferred birthday collection — replaces the wizard's identity step.
+          Shows only when the client has no birthday on file, matching the
+          Sephora/Ulta deferred-profile pattern. */}
+      {!client.birthdayMonth && <BirthdayNudge />}
 
       {/* Next-visit reminder — appears when client has a completed visit
           and the recommended next date is in the future. */}

@@ -486,13 +486,12 @@ export const CLIENTS: Client[] = [
   _mkClient(33, { firstName: "Chanel", lastName: "Morris", phone: "(718) 555-0119", email: "chanel.m@example.com", emailOptIn: true, textOptIn: true, visits: 11, lastVisit: "2026-04-13", totalSpend: 1980, membership: "Silver", referralSource: "Referral", birthdayMonth: 10 }),
   _mkClient(34, { firstName: "Destiny", lastName: "Rivera", phone: "(917) 555-0106", email: "destiny.r@example.com", emailOptIn: true, textOptIn: true, visits: 0, tags: ["New"], referralSource: "Instagram", birthdayMonth: 1, totalSpend: 0 }),
   // Cold-start canon — Imani is brand-new to the app. visits/totalSpend stay
-  // zero until she completes the onboarding wizard and books through /book.
-  // firstName / lastName / birthdayMonth here represent what she'll enter in
-  // the wizard's identity step (pre-filled to honor the no-typing rule);
-  // they're not used by any operator-facing celebration logic. Tagged "New"
-  // so operator surfaces (clients list, AI inbox escalation thread) still
-  // flag her correctly.
-  _mkClient(35, { firstName: "Imani", lastName: "Webb", phone: "(646) 555-0199", email: "imani.webb@example.com", emailOptIn: true, textOptIn: false, visits: 0, totalSpend: 0, referralSource: "Walk-in", tags: ["New"], birthdayMonth: 11, birthdayDay: 22 }),
+  // zero, birthdayMonth/Day stay undefined (the auth flow no longer asks
+  // for them — they get collected just-in-time via the BirthdayNudge card
+  // on /me home, matching Sephora/Ulta deferred-profile pattern). Tagged
+  // "New" so operator surfaces (clients list, AI inbox escalation thread)
+  // still flag her correctly.
+  _mkClient(35, { firstName: "Imani", lastName: "Webb", phone: "(646) 555-0199", email: "imani.webb@example.com", emailOptIn: true, textOptIn: false, visits: 0, totalSpend: 0, referralSource: "Walk-in", tags: ["New"] }),
   _mkClient(36, { firstName: "Janelle", lastName: "Ford", phone: "(347) 555-0155", email: "janelle.f@example.com", emailOptIn: true, textOptIn: true, visits: 5, lastVisit: "2026-04-08", totalSpend: 725, referralSource: "Google", birthdayMonth: 4 }),
   _mkClient(37, { firstName: "Leslie", lastName: "Brooks", phone: "(646) 555-0121", email: "leslie.brooks@example.com", emailOptIn: false, textOptIn: false, visits: 1, lastVisit: "2026-02-05", totalSpend: 235, referralSource: "Yelp", birthdayMonth: 9 }),
   _mkClient(38, { firstName: "Erica", lastName: "Suarez", phone: "(917) 555-0146", email: "erica.s@example.com", emailOptIn: true, textOptIn: true, visits: 6, lastVisit: "2026-03-28", totalSpend: 840, referralSource: "Instagram", birthdayMonth: 7 }),
