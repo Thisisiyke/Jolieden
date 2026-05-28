@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Search, ChevronRight } from "lucide-react";
+import { Search, ChevronRight, Heart } from "lucide-react";
 import { resolveClient } from "@/lib/personas";
 import { popularStyles, CATEGORY_PALETTES, type Style } from "@/lib/gallery";
 import { CATEGORIES } from "@/lib/catalog";
@@ -71,6 +71,21 @@ export default async function BrowsePage({
       >
         <Search className="h-4 w-4" />
         Search styles, lengths, colors
+      </Link>
+
+      {/* Saved styles shortcut */}
+      <Link
+        href={`/me/${clientSlug}/wishlist`}
+        className="flex items-center gap-3 rounded-2xl border border-ink-200 bg-white p-4 hover:border-brand"
+      >
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
+          <Heart className="h-4 w-4 fill-brand" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-semibold text-ink-900">Your saved styles</div>
+          <div className="text-xs text-ink-500">Looks you&apos;ve hearted — tap to rebook one.</div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-ink-300" />
       </Link>
 
       {/* Most-booked carousel */}

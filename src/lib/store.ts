@@ -64,6 +64,10 @@ type State = {
   stylists: Record<string, Stylist>;
   journey: Record<string, HairJourneyEntry>;
   cart: Cart;
+  // Wishlist — clientSlug → set of styleSlug saved.
+  wishlist: Record<string, string[]>;
+  // Locale preference per client (EN/FR), persists to localStorage.
+  locale: Record<string, "en" | "fr">;
   activePersona: {
     surface: "operator" | "book" | "me" | "pro";
     clientSlug?: string; // for /me and /book
@@ -82,6 +86,13 @@ type Actions = {
 
   // journey
   addJourneyEntry: (e: HairJourneyEntry) => void;
+
+  // wishlist
+  toggleWishlist: (clientSlug: string, styleSlug: string) => void;
+  setWishlist: (clientSlug: string, styleSlugs: string[]) => void;
+
+  // locale
+  setLocale: (clientSlug: string, locale: "en" | "fr") => void;
 
   // cart
   resetCart: () => void;
@@ -117,6 +128,11 @@ const hydratedState = (): State => ({
   stylists: keyBySlug(STAFF_FIXTURES), // stylists keyed by slug; clients keyed by id
   journey: keyById(JOURNEY_FIXTURES),
   cart: emptyCart(),
+  wishlist: {
+    // Aaliyah has 3 saved styles for demo.
+    "aaliyah-j": ["boho-goddess", "honey-knotless", "bora-bora-boho"],
+  },
+  locale: {},
   activePersona: {
     surface: "operator",
   },
@@ -166,6 +182,21 @@ export const useStore = create<State & Actions>()(
           journey: { ...s.journey, [e.id]: e },
         })),
 
+      toggleWishlist: (clientSlug, styleSlug) =>
+        set((s) => {
+          const existing = s.wishlist[clientSlug] || [];
+          const next = existing.includes(styleSlug)
+            ? existing.filter((x) => x !== styleSlug)
+            : [...existing, styleSlug];
+          return { wishlist: { ...s.wishlist, [clientSlug]: next } };
+        }),
+
+      setWishlist: (clientSlug, styleSlugs) =>
+        set((s) => ({ wishlist: { ...s.wishlist, [clientSlug]: styleSlugs } })),
+
+      setLocale: (clientSlug, locale) =>
+        set((s) => ({ locale: { ...s.locale, [clientSlug]: locale } })),
+
       resetCart: () => set({ cart: emptyCart() }),
       setCart: (cart) => set({ cart }),
       addCartLine: (line) =>
@@ -201,6 +232,8 @@ export const useStore = create<State & Actions>()(
         clients: s.clients,
         journey: s.journey,
         cart: s.cart,
+        wishlist: s.wishlist,
+        locale: s.locale,
         activePersona: s.activePersona,
         // stylists is canonical from fixtures; don't persist (always re-hydrate)
       }),
@@ -255,6 +288,15 @@ export const useJourneyForClient = (clientSlug: string | undefined) =>
 
 export const useCart = () => useStore((s) => s.cart);
 export const useActivePersona = () => useStore((s) => s.activePersona);
+
+export const useWishlist = (clientSlug: string | undefined) =>
+  useStore(useShallow((s) => (clientSlug ? s.wishlist[clientSlug] || [] : [])));
+
+export const useIsWishlisted = (clientSlug: string | undefined, styleSlug: string) =>
+  useStore((s) => !!clientSlug && (s.wishlist[clientSlug] || []).includes(styleSlug));
+
+export const useLocale = (clientSlug: string | undefined) =>
+  useStore((s) => (clientSlug ? s.locale[clientSlug] || "en" : "en"));
 
 // Convenience: TODAY constant re-exported so consumers don't need a second import.
 export { TODAY };

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Pencil, CreditCard, Gift, LogOut, ShieldCheck, Trophy, Users } from "lucide-react";
+import { ChevronRight, Pencil, CreditCard, Gift, LogOut, ShieldCheck, Trophy, Users, Heart, Wallet, FileSignature, Languages, Crown } from "lucide-react";
 import { resolveClient, resolveStylist } from "@/lib/personas";
 import { TODAY } from "@/lib/data";
 import { pointsFor, tierFor } from "@/lib/rewards";
@@ -137,7 +137,7 @@ export default async function ProfilePage({
         </button>
       </section>
 
-      {/* Rewards summary — links to full screen */}
+      {/* Rewards & membership */}
       <Section title="Rewards & membership">
         <Row
           label={`${tier} member`}
@@ -145,7 +145,22 @@ export default async function ProfilePage({
           href={`/me/${client.slug}/rewards`}
           trailing={<Trophy className="h-3.5 w-3.5 text-gold" />}
         />
-        <Row label="Refer a friend" value="+100 pts each" href={`/me/${client.slug}/rewards`} trailing={<Users className="h-3.5 w-3.5 text-ink-400" />} />
+        <Row
+          label="Membership tier"
+          href={`/me/${client.slug}/membership`}
+          trailing={<Crown className="h-3.5 w-3.5 text-ink-400" />}
+        />
+        <Row
+          label="Refer a friend"
+          value="+100 pts each"
+          href={`/me/${client.slug}/referrals`}
+          trailing={<Users className="h-3.5 w-3.5 text-ink-400" />}
+        />
+        <Row
+          label="Saved styles"
+          href={`/me/${client.slug}/wishlist`}
+          trailing={<Heart className="h-3.5 w-3.5 text-ink-400" />}
+        />
       </Section>
 
       {/* Contact */}
@@ -199,12 +214,37 @@ export default async function ProfilePage({
           href="#"
           trailing={<CreditCard className="h-3.5 w-3.5 text-ink-400" />}
         />
+        <Row label="Apple Pay" value="Set up" href="#" />
         <Row
-          label="Apple Pay"
-          value="Set up"
-          href="#"
+          label="Gift cards"
+          href={`/me/${client.slug}/gift-cards`}
+          trailing={<Gift className="h-3.5 w-3.5 text-ink-400" />}
         />
-        <Row label="Gift cards" value="$0 balance" href="#" trailing={<Gift className="h-3.5 w-3.5 text-ink-400" />} divider={false} />
+        <Row
+          label="Account credit"
+          href={`/me/${client.slug}/credit`}
+          trailing={<Wallet className="h-3.5 w-3.5 text-ink-400" />}
+        />
+      </Section>
+
+      {/* Forms */}
+      <Section title="Forms & consent">
+        <Row
+          label="Intake form"
+          value="On file"
+          href={`/me/${client.slug}/intake`}
+          trailing={<FileSignature className="h-3.5 w-3.5 text-ink-400" />}
+        />
+      </Section>
+
+      {/* Language */}
+      <Section title="Language">
+        <Row
+          label="App language"
+          value="English"
+          href="#"
+          trailing={<Languages className="h-3.5 w-3.5 text-ink-400" />}
+        />
       </Section>
 
       {/* Privacy + account */}
