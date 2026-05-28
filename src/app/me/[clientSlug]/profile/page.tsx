@@ -5,6 +5,7 @@ import { resolveClient, resolveStylist } from "@/lib/personas";
 import { TODAY } from "@/lib/data";
 import { pointsFor, tierFor } from "@/lib/rewards";
 import LanguageToggle from "@/components/me/LanguageToggle";
+import LockedBirthdayRow from "@/components/me/LockedBirthdayRow";
 
 function Avatar({ name, hue }: { name: string; hue?: number }) {
   const h = hue ?? 320;
@@ -168,11 +169,13 @@ export default async function ProfilePage({
       <Section title="Contact">
         <Row label="Phone" value={client.phone} href="#" />
         <Row label="Email" value={client.email} href="#" />
-        <Row
-          label="Pronouns"
-          value="She/Her"
-          href="#"
-          divider={false}
+        <Row label="Pronouns" value="She/Her" href="#" />
+        {/* Birthday is read-only after first save (write-once policy to
+            keep the birthday-perk system honest). Operator staff can
+            still override it from /clients/[id]. */}
+        <LockedBirthdayRow
+          birthdayMonth={client.birthdayMonth}
+          birthdayDay={client.birthdayDay}
         />
       </Section>
 
