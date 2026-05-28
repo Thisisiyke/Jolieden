@@ -122,7 +122,12 @@ export default async function StylistTodayPage({
         </header>
 
         <div className="grid grid-cols-2 gap-3">
-          <MetricCard label="Appts today" value={todayAppts.length} hint="Booked & walk-ins" href="/calendar" />
+          <MetricCard
+            label="Appts today"
+            value={todayAppts.length}
+            hint="Booked & walk-ins"
+            href={`/pro/${stylistSlug}/schedule`}
+          />
           <MetricCard label="On the chair" value={activeCount} hint={`${arrivedCount} arrived`} />
           <MetricCard
             label="AI inbox"

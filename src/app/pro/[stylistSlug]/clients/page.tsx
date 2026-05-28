@@ -1,16 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Search, ChevronRight, Star } from "lucide-react";
-import { resolveStylist, appointmentsForStylist } from "@/lib/personas";
+import { resolveStylist, appointmentsForStylist, CAST } from "@/lib/personas";
 import { CLIENTS, type Client } from "@/lib/data";
 
-function ClientRow({ client }: { client: Client }) {
+function ClientRow({ client, stylistSlug }: { client: Client; stylistSlug: string }) {
   const hue = client.avatarHue ?? 320;
   const init = (client.firstName[0] + client.lastName[0]).toUpperCase();
   const isVip = (client.tags || []).includes("VIP");
   return (
     <Link
-      href={`#`}
+      href={`/pro/${stylistSlug}/clients/${client.id}`}
       className="flex items-center gap-3 border-b border-ink-200 px-4 py-3 last:border-b-0 hover:bg-paper"
     >
       <div
@@ -47,8 +47,10 @@ export default async function StylistClientsPage({
   const stylist = resolveStylist(stylistSlug);
   if (!stylist) notFound();
 
-  // Resolve "her clients" by matching past appointments' client field to the
-  // CLIENTS list. Defensive against minor whitespace differences.
+  // Owner sees the whole client base ranked by lifetime spend (VIP first).
+  // Stylists see clients they've personally serviced; fallback list when empty.
+  const isOwner = stylistSlug === CAST.owner;
+
   const apptClientNames = new Set(
     appointmentsForStylist(stylistSlug).map((a) => a.client.toLowerCase().trim()),
   );
@@ -56,12 +58,14 @@ export default async function StylistClientsPage({
     apptClientNames.has(`${c.firstName} ${c.lastName}`.toLowerCase().trim()),
   ).sort((a, b) => (b.lastVisit || "").localeCompare(a.lastVisit || ""));
 
-  // Fallback for stylists with no historical fixtures (new cast). Show the top
-  // 8 loyalists so the screen is never empty during demo.
-  const fallback = [...CLIENTS]
-    .sort((a, b) => b.totalSpend - a.totalSpend)
-    .slice(0, 8);
-  const list = her.length > 0 ? her : fallback;
+  const allRanked = [...CLIENTS]
+    .sort((a, b) => b.totalSpend - a.totalSpend);
+
+  const list = isOwner
+    ? allRanked
+    : her.length > 0
+      ? her
+      : allRanked.slice(0, 8);
 
   return (
     <div className="space-y-5 px-4 py-5">
@@ -70,9 +74,11 @@ export default async function StylistClientsPage({
           Clients
         </h1>
         <p className="mt-1 text-xs text-ink-500">
-          {her.length > 0
-            ? `${her.length} clients ${stylist.name.split(" ")[0]} has serviced.`
-            : `Top loyalists across the salon — once ${stylist.name.split(" ")[0]} has appointments on file, this filters to her own roster.`}
+          {isOwner
+            ? `${list.length} clients in the database, ranked by lifetime spend.`
+            : her.length > 0
+              ? `${her.length} clients ${stylist.name.split(" ")[0]} has serviced.`
+              : `Top loyalists across the salon — once ${stylist.name.split(" ")[0]} has appointments on file, this filters to her own roster.`}
         </p>
       </header>
 
@@ -83,11 +89,11 @@ export default async function StylistClientsPage({
 
       <section>
         <h2 className="px-1 pb-1.5 font-mono text-[10px] uppercase tracking-wider text-ink-500">
-          Recently seen
+          {isOwner ? "Top loyalists" : "Recently seen"}
         </h2>
         <div className="overflow-hidden rounded-xl border border-ink-200 bg-white">
           {list.map((c) => (
-            <ClientRow key={c.id} client={c} />
+            <ClientRow key={c.id} client={c} stylistSlug={stylistSlug} />
           ))}
         </div>
       </section>

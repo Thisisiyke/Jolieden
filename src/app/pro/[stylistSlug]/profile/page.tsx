@@ -9,8 +9,8 @@ import {
   Calendar as CalendarIcon,
   ShieldCheck,
 } from "lucide-react";
-import { resolveStylist, appointmentsForStylist } from "@/lib/personas";
-import { TODAY } from "@/lib/data";
+import { resolveStylist, appointmentsForStylist, CAST } from "@/lib/personas";
+import { TODAY, APPOINTMENTS } from "@/lib/data";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -75,7 +75,9 @@ export default async function StylistProfilePage({
   const stylist = resolveStylist(stylistSlug);
   if (!stylist) notFound();
 
-  const myAppts = appointmentsForStylist(stylistSlug);
+  // Owner sees salon-wide revenue + appointment counts; stylist sees own.
+  const isOwner = stylistSlug === CAST.owner;
+  const myAppts = isOwner ? APPOINTMENTS : appointmentsForStylist(stylistSlug);
   const completedToday = myAppts.filter((a) => a.date === TODAY && a.status === "completed");
   const today = completedToday.reduce((acc, a) => acc + (a.price ?? 0), 0);
   const monthTotal = myAppts
@@ -114,16 +116,25 @@ export default async function StylistProfilePage({
         </button>
       </section>
 
-      {/* Earnings */}
+      {/* Earnings — labels swap when owner ("House") vs stylist ("Earnings") */}
       <section>
         <h2 className="px-1 pb-1.5 font-mono text-[10px] uppercase tracking-wider text-ink-500">
-          Earnings
+          {isOwner ? "House revenue" : "Earnings"}
         </h2>
         <div className="flex gap-2">
           <Metric icon={DollarSign} label="Today" value={`$${today}`} />
           <Metric icon={TrendingUp} label="MTD" value={`$${monthTotal}`} />
-          <Metric icon={CalendarIcon} label="Bookings" value={String(myAppts.length)} />
+          <Metric
+            icon={CalendarIcon}
+            label={isOwner ? "Visits" : "Bookings"}
+            value={String(myAppts.length)}
+          />
         </div>
+        {isOwner && (
+          <p className="mt-2 px-1 font-mono text-[10px] text-ink-500">
+            Salon-wide totals across all stylists.
+          </p>
+        )}
       </section>
 
       {/* Bio */}

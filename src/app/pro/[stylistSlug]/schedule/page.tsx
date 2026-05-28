@@ -2,8 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import clsx from "clsx";
-import { resolveStylist, appointmentsForStylist } from "@/lib/personas";
-import { TODAY, type Appointment, type ApptStatus } from "@/lib/data";
+import { resolveStylist, appointmentsForStylist, CAST } from "@/lib/personas";
+import { APPOINTMENTS, TODAY, type Appointment, type ApptStatus } from "@/lib/data";
 
 const STATUS_DOT: Record<ApptStatus, string> = {
   unconfirmed: "bg-status-pending",
@@ -19,9 +19,11 @@ const STATUS_DOT: Record<ApptStatus, string> = {
 function ScheduleCard({
   appt,
   stylistSlug,
+  showStaffName,
 }: {
   appt: Appointment;
   stylistSlug: string;
+  showStaffName?: boolean;
 }) {
   return (
     <Link
@@ -51,7 +53,12 @@ function ScheduleCard({
             </span>
           )}
         </div>
-        <div className="truncate text-xs text-ink-500">{appt.service}</div>
+        <div className="truncate text-xs text-ink-500">
+          {appt.service}
+          {showStaffName && appt.staff && (
+            <span className="font-mono text-[10px] text-ink-400"> · {appt.staff}</span>
+          )}
+        </div>
       </div>
       <ChevronRight className="h-4 w-4 text-ink-300 group-hover:text-brand" />
     </Link>
@@ -67,7 +74,10 @@ export default async function StylistScheduleListPage({
   const stylist = resolveStylist(stylistSlug);
   if (!stylist) notFound();
 
-  const appts = appointmentsForStylist(stylistSlug);
+  // Owner sees salon-wide; everyone else sees their own.
+  const isOwner = stylistSlug === CAST.owner;
+  const appts: Appointment[] = isOwner ? APPOINTMENTS : appointmentsForStylist(stylistSlug);
+
   // Group by date.
   const groups = new Map<string, Appointment[]>();
   for (const a of appts) {
@@ -77,40 +87,61 @@ export default async function StylistScheduleListPage({
   }
   const sortedDates = Array.from(groups.keys()).sort();
 
+  // Show today + future first; past dates collapsed at end.
+  const futureDates = sortedDates.filter((d) => d >= TODAY);
+  const pastDates = sortedDates.filter((d) => d < TODAY).reverse();
+
   return (
     <div className="space-y-6 px-5 py-6">
       <header>
-        <h1 className="font-serif text-2xl font-semibold text-brand">My schedule</h1>
+        <h1 className="font-serif text-2xl font-semibold text-brand">
+          {isOwner ? "Salon schedule" : "My schedule"}
+        </h1>
         <p className="mt-1 text-xs text-ink-500">
-          {appts.length} appointment{appts.length === 1 ? "" : "s"} on file.
+          {isOwner
+            ? `${appts.length} appointments across all stylists.`
+            : `${appts.length} appointment${appts.length === 1 ? "" : "s"} on file.`}
         </p>
       </header>
 
       {sortedDates.length === 0 ? (
         <div className="rounded-lg border border-dashed border-ink-300 bg-white p-6 text-center text-xs text-ink-500">
-          Nothing on the books.
+          {isOwner ? "Empty schedule." : "Nothing on the books."}
         </div>
       ) : (
-        sortedDates.map((date) => {
-          const list = groups.get(date) ?? [];
-          list.sort((a, b) => a.start.localeCompare(b.start));
-          const isToday = date === TODAY;
-          return (
-            <section key={date} className="space-y-2">
-              <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-ink-500">
-                <span>{date}</span>
-                {isToday && (
-                  <span className="rounded bg-brand px-1.5 font-mono text-[9px] uppercase tracking-wider text-white">
-                    Today
-                  </span>
-                )}
-              </div>
-              {list.map((a) => (
-                <ScheduleCard key={a.id} appt={a} stylistSlug={stylistSlug} />
-              ))}
-            </section>
-          );
-        })
+        <>
+          {[...futureDates, ...pastDates].map((date) => {
+            const list = groups.get(date) ?? [];
+            list.sort((a, b) => a.start.localeCompare(b.start));
+            const isToday = date === TODAY;
+            const isPast = date < TODAY;
+            return (
+              <section key={date} className="space-y-2">
+                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-ink-500">
+                  <span>{date}</span>
+                  {isToday && (
+                    <span className="rounded bg-brand px-1.5 font-mono text-[9px] uppercase tracking-wider text-white">
+                      Today
+                    </span>
+                  )}
+                  {isPast && !isToday && (
+                    <span className="rounded bg-ink-200 px-1.5 font-mono text-[9px] uppercase tracking-wider text-ink-600">
+                      Past
+                    </span>
+                  )}
+                </div>
+                {list.map((a) => (
+                  <ScheduleCard
+                    key={a.id}
+                    appt={a}
+                    stylistSlug={stylistSlug}
+                    showStaffName={isOwner}
+                  />
+                ))}
+              </section>
+            );
+          })}
+        </>
       )}
     </div>
   );
