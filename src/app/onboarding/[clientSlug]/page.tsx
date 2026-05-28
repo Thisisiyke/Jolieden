@@ -11,6 +11,10 @@ import OnboardingWizard from "@/components/me/OnboardingWizard";
 // /me/[clientSlug]/layout.tsx parent so it renders edge-to-edge without the
 // TopBar / TabBar / AssistanceFab chrome — the user is being authenticated,
 // not navigating the app.
+//
+// P36: identity step (first + last name, email) collected after SMS verify
+// so account creation has enough info to deliver rewards, birthday perks,
+// receipts, and recover access if the phone changes.
 
 export default async function OnboardingPage({
   params,
@@ -25,7 +29,9 @@ export default async function OnboardingPage({
     <MobileFrame>
       <OnboardingWizard
         clientSlug={clientSlug}
-        firstName={client.firstName}
+        defaultFirstName={client.firstName}
+        defaultLastName={client.lastName}
+        defaultEmail={client.email ?? ""}
         defaultPhone={client.phone}
       />
     </MobileFrame>

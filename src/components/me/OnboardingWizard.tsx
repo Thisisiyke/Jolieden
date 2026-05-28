@@ -19,23 +19,36 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Mail, Sparkles } from "lucide-react";
 
-type Step = "welcome" | "phone" | "verify" | "success";
+type Step =
+  | "welcome"
+  | "phone"
+  | "verify"
+  | "identity"
+  | "success";
 
 type Props = {
   clientSlug: string;
-  // Greeting on the success screen. In browse-first the user's name was
-  // already known by the time auth fires (collected at booking-confirm or
-  // from an existing salon record matched by phone). For the demo we read
-  // it from the persona fixture.
-  firstName: string;
+  // Default values used to pre-fill the wizard inputs (honoring the no-typing
+  // prototype rule). The wizard never *reveals* the name on welcome/phone/
+  // verify — those pre-auth screens use generic copy. Name + email are
+  // collected in the identity step right after SMS verification.
+  defaultFirstName: string;
+  defaultLastName: string;
+  defaultEmail: string;
   defaultPhone: string;
 };
 
+function isValidEmail(s: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
+}
+
 export default function OnboardingWizard({
   clientSlug,
-  firstName,
+  defaultFirstName,
+  defaultLastName,
+  defaultEmail,
   defaultPhone,
 }: Props) {
   const router = useRouter();
@@ -44,6 +57,12 @@ export default function OnboardingWizard({
   const [phone, setPhone] = useState(defaultPhone);
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [verifying, setVerifying] = useState(false);
+  // Identity — collected AFTER SMS verification. Phone proves device
+  // possession; email is the recovery + verification rail (production
+  // sends a verification link on submit, but doesn't block app usage).
+  const [firstName, setFirstName] = useState(defaultFirstName);
+  const [lastName, setLastName] = useState(defaultLastName);
+  const [email, setEmail] = useState(defaultEmail);
   const verifyRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const finish = () => router.push(`/me/${clientSlug}`);
@@ -154,7 +173,7 @@ export default function OnboardingWizard({
       setVerifying(true);
       window.setTimeout(() => {
         setVerifying(false);
-        setStep("success");
+        setStep("identity");
       }, 900);
     };
     const onDigit = (i: number, v: string) => {
@@ -243,6 +262,110 @@ export default function OnboardingWizard({
     );
   }
 
+  // ─────────────────────────── Identity ───────────────────────────
+  //
+  // Phone is verified at this point — the device proves possession of the
+  // number. Now we collect the human identity (first + last name, email)
+  // needed to actually create the account, deliver perks, and recover
+  // access if the phone changes. Email gets a verification link on submit
+  // (production sends it via the auth provider; the prototype shows it on
+  // the success screen). We don't block app usage on email verification —
+  // we prompt for it later.
+
+  if (step === "identity") {
+    const emailOk = isValidEmail(email);
+    const canContinue =
+      firstName.trim().length > 0 && lastName.trim().length > 0 && emailOk;
+
+    return (
+      <div className="flex h-full flex-col">
+        <header className="flex items-center justify-between px-4 pt-4">
+          <button
+            type="button"
+            onClick={() => setStep("verify")}
+            aria-label="Back"
+            className="-ml-1 flex items-center gap-0.5 text-brand"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <span />
+          <span />
+        </header>
+        <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-5 pt-8 pb-6">
+          <div>
+            <h2 className="font-serif text-2xl font-semibold text-ink-900">
+              Almost there
+            </h2>
+            <p className="mt-1 text-sm text-ink-700">
+              Tell us who you are. We&apos;ll send a verification link to your
+              email — opening it confirms your account.
+            </p>
+          </div>
+
+          <section className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+                First name
+              </label>
+              <input
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Imani"
+                autoComplete="given-name"
+                className="mt-1 w-full rounded-md border border-ink-300 bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+                Last name
+              </label>
+              <input
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Webb"
+                autoComplete="family-name"
+                className="mt-1 w-full rounded-md border border-ink-300 bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none"
+              />
+            </div>
+          </section>
+
+          <section>
+            <label className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+              <Mail className="mr-0.5 inline h-3 w-3" /> Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@email.com"
+              autoComplete="email"
+              className="mt-1 w-full rounded-md border border-ink-300 bg-white px-3 py-2.5 text-sm focus:border-brand focus:outline-none"
+            />
+            {!emailOk && email.length > 0 && (
+              <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-status-pending">
+                Check the format — needs an @ and a domain.
+              </p>
+            )}
+            <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-ink-500">
+              📩 Recovery if your phone changes · receipts · birthday cards
+            </p>
+          </section>
+        </div>
+        <div className="border-t border-ink-200 bg-white px-4 py-3">
+          <button
+            type="button"
+            onClick={() => setStep("success")}
+            disabled={!canContinue}
+            className="flex w-full items-center justify-center gap-1.5 rounded-md bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+          >
+            Create my account
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ─────────────────────────── Success ───────────────────────────
 
   return (
@@ -257,10 +380,18 @@ export default function OnboardingWizard({
         Birthday, hair details, and notifications happen in the app — only when
         you want.
       </p>
+      <div className="mt-6 flex w-full max-w-xs items-start gap-2 rounded-xl border border-ink-200 bg-white/70 p-3 text-left">
+        <Mail className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <div className="min-w-0 text-[12px] leading-relaxed text-ink-700">
+          We just emailed{" "}
+          <span className="font-medium text-ink-900">{email}</span> — open
+          the link any time to verify your account.
+        </div>
+      </div>
       <button
         type="button"
         onClick={finish}
-        className="mt-10 flex items-center gap-1.5 rounded-md bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-700"
+        className="mt-8 flex items-center gap-1.5 rounded-md bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-700"
       >
         Browse the gallery
         <ArrowRight className="h-4 w-4" />
