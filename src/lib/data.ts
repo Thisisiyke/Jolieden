@@ -175,6 +175,90 @@ export const APPOINTMENTS: Appointment[] = [
   mk({ date: TODAY, client: "Yvonne Adams", pronouns: "She/Her", start: "4:30pm", end: "6:00pm", service: "Wash & Style", staff: "Fatou Ciss", price: 95, status: "confirmed", aiBooked: true, aiBookedFromThreadId: "c-ai-4" }),
 
   // ---------- CAST DEMO APPOINTMENTS (for /me + /pro lifecycle demos) ----------
+
+  // Aaliyah TODAY with Oumou — the headline lifecycle demo. Loyalist persona
+  // can walk: home upcoming card → check-in QR → arrived → in-service →
+  // completed → receipt + rate + journey entry. On stylist side, Oumou's
+  // NextUpCard surfaces this as her first client of the day.
+  mk({
+    date: TODAY,
+    client: "Aaliyah Jackson",
+    pronouns: "She/Her",
+    phone: "(917) 555-0181",
+    start: "10:00am",
+    end: "5:00pm",
+    service: "XS Knotless Braids",
+    serviceDetail: "Mid-Back, Triangle parts, #1B/27, Boho ends",
+    staff: "Oumou D.",
+    price: 395,
+    showRate: 100,
+    avgVisit: 365,
+    avgFrequency: "Every 8 wks",
+    numVisits: 7,
+    status: "confirmed",
+    tags: ["Loyalist", "Repeat", "VIP"],
+    bookedBy: "Aaliyah J.",
+    bookedAt: "Mar 17th @ 11:42am",
+  }),
+
+  // Dieynaba's TODAY appointment — color consult so she has a stylist day
+  // and isn't just an empty AI-inbox persona.
+  mk({
+    date: TODAY,
+    client: "Layla McGrady",
+    pronouns: "She/Her",
+    phone: "(917) 555-0444",
+    start: "1:00pm",
+    end: "4:00pm",
+    service: "Balayage Touch-up",
+    serviceDetail: "Hand-painted highlights · honey + caramel",
+    staff: "Dieynaba D.",
+    price: 285,
+    showRate: 100,
+    avgVisit: 95,
+    avgFrequency: "Every 12 wks",
+    numVisits: 4,
+    status: "confirmed",
+    bookedBy: "Layla M.",
+    bookedAt: "Apr 8th @ 3:18pm",
+  }),
+
+  // Naomi's recent past completed visit — gives her a hair journey timeline
+  // (the birthday-week persona shouldn't have a blank journey tab).
+  mk({
+    date: "2026-02-21",
+    client: "Naomi Brooks",
+    pronouns: "She/Her",
+    phone: "(917) 555-0212",
+    start: "10:00am",
+    end: "12:00pm",
+    service: "Silk Press",
+    serviceDetail: "Wash + blow + flat iron · light layers",
+    staff: "Fatou Ciss",
+    price: 145,
+    showRate: 100,
+    avgVisit: 160,
+    numVisits: 3,
+    status: "completed",
+  }),
+
+  // Aaliyah's older past visit — additional journey context (already has
+  // YESTERDAY completed, this adds a second touchpoint with a different
+  // stylist for visual variety in her timeline).
+  mk({
+    date: "2026-02-17",
+    client: "Aaliyah Jackson",
+    pronouns: "She/Her",
+    phone: "(917) 555-0181",
+    start: "9:00am",
+    end: "4:00pm",
+    service: "XS Knotless Braids",
+    serviceDetail: "Waist length, Boho ends, 1B/27",
+    staff: "Oumou D.",
+    price: 395,
+    status: "completed",
+  }),
+
   // Aaliyah's 8-week rebook with her preferred stylist Oumou.
   mk({
     date: "2026-06-09",

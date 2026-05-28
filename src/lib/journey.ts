@@ -82,6 +82,19 @@ export const JOURNEY: HairJourneyEntry[] = [
     note: "Tried Mame this round while Oumou was on PTO. Honest A/B test.",
     rating: 4,
   },
+
+  // Naomi — recent silk press so her hair journey isn't empty for the
+  // birthday-week persona.
+  {
+    id: "j-nb-1",
+    clientSlug: "naomi-b",
+    date: "2026-02-21",
+    serviceName: "Silk Press",
+    stylistSlug: "fatou-c",
+    afterPhoto: `${CDN}/1763415079401_9d8162ea-474c-4119-96ea-d72f1d8d1a4b.jpg`,
+    note: "Light layers, glossy finish — held up beautifully for two weeks.",
+    rating: 5,
+  },
 ];
 
 export const journeyForClient = (clientSlug: string): HairJourneyEntry[] =>
