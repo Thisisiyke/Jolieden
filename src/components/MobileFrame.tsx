@@ -1,7 +1,8 @@
 // iPhone-style phone frame for /me and /pro. On desktop, the surfaces sit
-// inside a phone bezel with Dynamic Island, status bar, and home indicator
-// so reviewers see exactly what a client/stylist would. On mobile (<640px),
-// the bezel collapses and the app goes fullscreen.
+// inside a fixed-height phone bezel (iPhone 15 Pro Max proportions) with
+// Dynamic Island, status bar, and home indicator. The body scrolls inside
+// the phone screen — not the page. On mobile (<640px), the bezel collapses
+// and the app goes fullscreen.
 
 import { SignalHigh, WifiHigh, BatteryFull } from "lucide-react";
 
@@ -20,24 +21,25 @@ function StatusBar() {
 
 export default function MobileFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-paper-mute sm:flex sm:items-center sm:justify-center sm:py-10">
-      <div className="relative w-full sm:w-[420px]">
-        {/* iPhone bezel — desktop only */}
-        <div className="relative bg-transparent p-0 sm:rounded-[3rem] sm:bg-[#0d0d0e] sm:p-[10px] sm:shadow-[0_40px_120px_-40px_rgba(67,25,38,0.65)] sm:ring-1 sm:ring-black/30">
-          {/* Inner screen */}
-          <div className="relative flex min-h-[100dvh] flex-col overflow-hidden bg-white sm:min-h-[820px] sm:rounded-[2.4rem]">
-            {/* Status bar */}
-            <StatusBar />
+    <div className="min-h-screen bg-paper-mute sm:flex sm:items-start sm:justify-center sm:py-10">
+      {/* iPhone bezel — desktop only padding/background */}
+      <div className="relative w-full bg-transparent p-0 sm:w-auto sm:rounded-[3rem] sm:bg-[#0d0d0e] sm:p-[12px] sm:shadow-[0_40px_120px_-40px_rgba(67,25,38,0.65)] sm:ring-1 sm:ring-black/30">
+        {/* Inner screen — fixed dimensions on desktop so the body scrolls
+            inside the phone, not the page. iPhone 15 Pro Max-ish: 430 x 900. */}
+        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-white sm:h-[900px] sm:w-[430px] sm:rounded-[2.4rem]">
+          {/* Status bar */}
+          <StatusBar />
 
-            {/* Dynamic Island — desktop only */}
-            <div className="pointer-events-none absolute left-1/2 top-2 z-40 hidden h-[28px] w-[110px] -translate-x-1/2 rounded-full bg-black sm:block" />
+          {/* Dynamic Island — desktop only */}
+          <div className="pointer-events-none absolute left-1/2 top-2 z-40 hidden h-[28px] w-[110px] -translate-x-1/2 rounded-full bg-black sm:block" />
 
-            {/* App content (top bar + body + tab bar from layouts) */}
-            <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+          {/* App content (top bar + scrollable body + tab bar from the
+              surface layout). min-h-0 lets flex children shrink so the body
+              can actually overflow-y-auto. */}
+          <div className="flex min-h-0 flex-1 flex-col">{children}</div>
 
-            {/* Home indicator — desktop only */}
-            <div className="pointer-events-none absolute bottom-1.5 left-1/2 hidden h-[5px] w-[120px] -translate-x-1/2 rounded-full bg-black/80 sm:block" />
-          </div>
+          {/* Home indicator — desktop only */}
+          <div className="pointer-events-none absolute bottom-1.5 left-1/2 hidden h-[5px] w-[120px] -translate-x-1/2 rounded-full bg-black/80 sm:block" />
         </div>
       </div>
     </div>
