@@ -4,6 +4,7 @@
 
 import { notFound } from "next/navigation";
 import { resolveStylist } from "@/lib/personas";
+import { escalationsForStylist } from "@/lib/aiInbox";
 import MobileFrame from "@/components/MobileFrame";
 import ProTopBar from "@/components/pro/ProTopBar";
 import ProTabBar from "@/components/pro/ProTabBar";
@@ -19,9 +20,7 @@ export default async function ProShell({
   const stylist = resolveStylist(stylistSlug);
   if (!stylist) notFound();
 
-  // Inbox badge: count is hardcoded per persona for the prototype. Real wiring
-  // comes when AI takeover dashboard lands in P7.
-  const inboxBadge = stylistSlug === "diessou" ? 3 : 1;
+  const inboxBadge = escalationsForStylist(stylistSlug).length;
 
   return (
     <MobileFrame>
