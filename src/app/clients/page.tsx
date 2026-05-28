@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Search, Download, GitMerge, Plus } from "lucide-react";
-import { CLIENTS, type Client } from "../../lib/data";
+import { CLIENTS, clientSlug, type Client } from "../../lib/data";
 import { ClientsTable, type SortKey, type SortDir } from "../../components/clients/ClientsTable";
 import { FilterBuilder, applyFilters, type FilterRule } from "../../components/clients/FilterBuilder";
 import { AudiencesPanel } from "../../components/clients/AudiencesPanel";
@@ -187,7 +187,7 @@ export default function ClientsPage() {
         onCreate={(c) => {
           const id = `cl${Date.now()}`;
           setClients((prev) => [
-            { id, avatarHue: Math.floor(Math.random() * 360), ...c },
+            { id, slug: clientSlug(c.firstName, c.lastName), avatarHue: Math.floor(Math.random() * 360), ...c },
             ...prev,
           ]);
         }}

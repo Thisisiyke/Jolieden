@@ -12,7 +12,7 @@ export function AddClientDrawer({
 }: {
   open: boolean;
   onClose: () => void;
-  onCreate: (c: Omit<Client, "id" | "avatarHue">) => void;
+  onCreate: (c: Omit<Client, "id" | "avatarHue" | "slug">) => void;
 }) {
   const [first, setFirst] = useState("");
   const [last, setLast] = useState("");

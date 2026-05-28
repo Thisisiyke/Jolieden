@@ -176,15 +176,71 @@ export const STATUS_COLUMNS: { id: ApptStatus; label: string }[] = [
   { id: "completed", label: "Completed" },
 ];
 
-export const STAFF = [
-  { name: "Adja Timite", role: "Stylist", color: "#ec4899" },
-  { name: "Aminata Diawara", role: "Stylist", color: "#f59e0b" },
-  { name: "Bebe Kaba", role: "Braider", color: "#0ea5e9" },
-  { name: "Frederick Douglass", role: "Owner / Stylist", color: "#ec4899" },
-  { name: "Mame Diarra", role: "Senior Stylist", color: "#10b981" },
-  { name: "Naomi K.", role: "Stylist", color: "#8b5cf6" },
-  { name: "Lina O.", role: "Assistant", color: "#f59e0b" },
-  { name: "Asha P.", role: "Apprentice", color: "#0ea5e9" },
+// ───────────────────── STAFF / STYLISTS ─────────────────────
+
+export type Stylist = {
+  id: string;
+  slug: string;
+  name: string;
+  role: string;
+  color: string;
+  specialty?: string;
+  bio?: string;
+  photo?: string;
+  instagram?: string;
+  yearsAtSalon?: number;
+};
+
+export const STAFF: Stylist[] = [
+  { id: "s1", slug: "adja-t", name: "Adja Timite", role: "Stylist", color: "#ec4899" },
+  { id: "s2", slug: "aminata-d", name: "Aminata Diawara", role: "Stylist", color: "#f59e0b" },
+  { id: "s3", slug: "bebe-k", name: "Bebe Kaba", role: "Braider", color: "#0ea5e9" },
+  { id: "s4", slug: "frederick-d", name: "Frederick Douglass", role: "Senior Stylist", color: "#ec4899" },
+  { id: "s5", slug: "mame-d", name: "Mame Diarra", role: "Senior Stylist", color: "#10b981" },
+  { id: "s6", slug: "naomi-k", name: "Naomi K.", role: "Stylist", color: "#8b5cf6" },
+  { id: "s7", slug: "lina-o", name: "Lina O.", role: "Assistant", color: "#f59e0b" },
+  { id: "s8", slug: "asha-p", name: "Asha P.", role: "Apprentice", color: "#0ea5e9" },
+  {
+    id: "s9",
+    slug: "diessou",
+    name: "Diéssou",
+    role: "Owner / Founder",
+    color: "#431926",
+    specialty: "Founder",
+    bio: "Founded Jolieden Beauty Bar to create a space where Black hair gets the artistry, time, and care it deserves.",
+    instagram: "joliedensbeautybar",
+    yearsAtSalon: 7,
+  },
+  {
+    id: "s10",
+    slug: "oumou-d",
+    name: "Oumou D.",
+    role: "Senior Braider",
+    color: "#8e3a52",
+    specialty: "Knotless & Boho Braids",
+    bio: "Five years of knotless. Specializes in hairline-friendly tension and intricate parting.",
+    yearsAtSalon: 5,
+  },
+  {
+    id: "s11",
+    slug: "fatou-c",
+    name: "Fatou Ciss",
+    role: "Natural Hair Specialist",
+    color: "#c8a368",
+    specialty: "Silk Press & Treatments",
+    bio: "Heatless prep, deep-condition rituals, and silk-press finishes that last weeks.",
+    yearsAtSalon: 4,
+  },
+  {
+    id: "s12",
+    slug: "dieynaba-d",
+    name: "Dieynaba D.",
+    role: "Color Specialist",
+    color: "#f59e0b",
+    specialty: "Color & Highlights",
+    bio: "Custom color formulations for Black hair. Honey balayage, copper, and rich brunettes are her signature.",
+    yearsAtSalon: 3,
+  },
 ];
 
 export const SERVICES = [
@@ -211,6 +267,7 @@ export const CANCELLATIONS = [
 
 export type Client = {
   id: string;
+  slug: string;
   firstName: string;
   lastName: string;
   phone: string;
@@ -223,17 +280,33 @@ export type Client = {
   tags?: string[];
   referralSource?: "Google" | "Instagram" | "Referral" | "Walk-in" | "Yelp";
   birthdayMonth?: number; // 1..12
+  birthdayDay?: number; // 1..31
   membership?: "None" | "Silver" | "Gold" | "Platinum";
   avatarHue?: number;
+  preferredStylistSlug?: string;
 };
 
 const huePick = (n: number) => (n * 47) % 360;
 
+const slugify = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+export const clientSlug = (firstName: string, lastName: string) => {
+  const last = slugify(lastName).replace(/-/g, "");
+  return `${slugify(firstName)}-${last.charAt(0) || "x"}`;
+};
+
 const _mkClient = (
   i: number,
-  data: Omit<Client, "id" | "avatarHue">,
+  data: Omit<Client, "id" | "avatarHue" | "slug">,
 ): Client => ({
   id: `cl${i}`,
+  slug: clientSlug(data.firstName, data.lastName),
   avatarHue: huePick(i),
   ...data,
 });
@@ -269,7 +342,7 @@ export const CLIENTS: Client[] = [
   _mkClient(28, { firstName: "Jennifer", lastName: "Martinez", phone: "(347) 555-1240", email: "jennifer.m@example.com", emailOptIn: true, textOptIn: true, visits: 13, lastVisit: "2026-04-10", totalSpend: 2340, tags: ["VIP"], membership: "Gold", referralSource: "Referral", birthdayMonth: 3 }),
   _mkClient(29, { firstName: "Lenora", lastName: "Codrington", phone: "(718) 805-9748", email: "lenora.c@example.com", emailOptIn: true, textOptIn: false, visits: 4, lastVisit: "2026-03-18", totalSpend: 520, referralSource: "Instagram", birthdayMonth: 8 }),
   _mkClient(30, { firstName: "Nandy", lastName: "Mompremier", phone: "(347) 555-1003", email: "nandy.m@example.com", emailOptIn: true, textOptIn: true, visits: 5, lastVisit: "2026-02-28", totalSpend: 680, referralSource: "Yelp", birthdayMonth: 5 }),
-  _mkClient(31, { firstName: "Aaliyah", lastName: "Jackson", phone: "(917) 555-0181", email: "aaliyah.j@example.com", emailOptIn: true, textOptIn: true, visits: 7, lastVisit: "2026-04-13", totalSpend: 1165, referralSource: "Instagram", birthdayMonth: 2 }),
+  _mkClient(31, { firstName: "Aaliyah", lastName: "Jackson", phone: "(917) 555-0181", email: "aaliyah.j@example.com", emailOptIn: true, textOptIn: true, visits: 7, lastVisit: "2026-04-13", totalSpend: 1165, referralSource: "Instagram", birthdayMonth: 2, preferredStylistSlug: "oumou-d", tags: ["Loyalist"], membership: "Silver" }),
   _mkClient(32, { firstName: "Brianna", lastName: "Lee", phone: "(347) 555-0144", email: "brianna.lee@example.com", emailOptIn: true, textOptIn: true, visits: 3, lastVisit: "2026-04-13", totalSpend: 435, referralSource: "Google", birthdayMonth: 6 }),
   _mkClient(33, { firstName: "Chanel", lastName: "Morris", phone: "(718) 555-0119", email: "chanel.m@example.com", emailOptIn: true, textOptIn: true, visits: 11, lastVisit: "2026-04-13", totalSpend: 1980, membership: "Silver", referralSource: "Referral", birthdayMonth: 10 }),
   _mkClient(34, { firstName: "Destiny", lastName: "Rivera", phone: "(917) 555-0106", email: "destiny.r@example.com", emailOptIn: true, textOptIn: true, visits: 0, tags: ["New"], referralSource: "Instagram", birthdayMonth: 1, totalSpend: 0 }),
@@ -279,6 +352,8 @@ export const CLIENTS: Client[] = [
   _mkClient(38, { firstName: "Erica", lastName: "Suarez", phone: "(917) 555-0146", email: "erica.s@example.com", emailOptIn: true, textOptIn: true, visits: 6, lastVisit: "2026-03-28", totalSpend: 840, referralSource: "Instagram", birthdayMonth: 7 }),
   _mkClient(39, { firstName: "Gabrielle", lastName: "Kim", phone: "(347) 555-0128", email: "gabrielle.kim@example.com", emailOptIn: true, textOptIn: true, visits: 4, lastVisit: "2026-03-05", totalSpend: 420, referralSource: "Referral", birthdayMonth: 12 }),
   _mkClient(40, { firstName: "Mekka", lastName: "Jeffers", phone: "(347) 555-0147", email: "mekka.jeffers@example.com", emailOptIn: true, textOptIn: true, visits: 9, lastVisit: "2026-04-02", totalSpend: 1665, tags: ["VIP"], membership: "Gold", referralSource: "Referral", birthdayMonth: 3 }),
+  // Cast persona — birthday demo. Birthday in 4 days from TODAY (2026-04-14) → 2026-04-18.
+  _mkClient(41, { firstName: "Naomi", lastName: "Brooks", phone: "(917) 555-0212", email: "naomi.brooks@example.com", emailOptIn: true, textOptIn: true, visits: 3, lastVisit: "2026-03-21", totalSpend: 480, referralSource: "Instagram", birthdayMonth: 4, birthdayDay: 18, preferredStylistSlug: "fatou-c" }),
 ];
 
 // Saved audiences (segments)
