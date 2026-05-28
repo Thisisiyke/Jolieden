@@ -1,16 +1,33 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Cake, Calendar, ChevronRight, Gift, RefreshCcw, Sparkles, Star, Trophy } from "lucide-react";
+import {
+  Cake,
+  Calendar,
+  ChevronRight,
+  Gift,
+  QrCode,
+  RefreshCcw,
+  Sparkles,
+  Trophy,
+} from "lucide-react";
 import {
   resolveClient,
-  resolveStylist,
   appointmentsForClient,
   journeyForClient,
+  getCastStylists,
   CAST,
 } from "@/lib/personas";
-import { CATEGORY_PALETTES } from "@/lib/gallery";
+import {
+  CATEGORY_PALETTES,
+  popularStyles,
+  stylesByStylist,
+  type Style,
+} from "@/lib/gallery";
 import { TODAY, type Appointment, type Client } from "@/lib/data";
 import { pointsFor, tierFor, nextTierFor } from "@/lib/rewards";
+import HeroCarousel, { type HeroCard } from "@/components/me/HeroCarousel";
+import PhotoRow from "@/components/me/PhotoRow";
+import StylistSpotlight from "@/components/me/StylistSpotlight";
 
 // ───────────────────── birthday helpers ─────────────────────
 
@@ -18,7 +35,6 @@ function daysUntilBirthday(client: Client, today: string): number | null {
   if (!client.birthdayMonth) return null;
   const day = client.birthdayDay ?? 1;
   const [ty, tm, td] = today.split("-").map((n) => parseInt(n, 10));
-  // Birthday this year vs. next year.
   let bdate = new Date(ty, client.birthdayMonth - 1, day);
   const todayDate = new Date(ty, tm - 1, td);
   if (bdate < todayDate) bdate = new Date(ty + 1, client.birthdayMonth - 1, day);
@@ -26,44 +42,86 @@ function daysUntilBirthday(client: Client, today: string): number | null {
   return diff;
 }
 
-// ───────────────────── tile sub-components ─────────────────────
+// ───────────────────── hero card builder ─────────────────────
 
-function BirthdayHero({
-  daysAway,
-  tier,
-}: {
-  daysAway: number;
-  tier: string;
-}) {
-  const gifts: { label: string; sub?: string; redeemed?: boolean }[] = [
-    { label: "Comp Wash & Blow", sub: "Auto-applied to your booked visit" },
-    { label: "200 bonus points", sub: "Drops into your rewards 24h before your visit" },
-  ];
-  // Top tier gets the hand-written card too.
-  if (tier === "Platinum" || tier === "Gold") {
-    gifts.push({ label: "Hand-written card from Diéssou", sub: "Mailed to your address on file" });
+function buildHeroCards(
+  client: Client,
+  slug: string,
+  showBirthday: boolean,
+  daysToBday: number | null,
+  featuredPhoto?: string,
+): HeroCard[] {
+  const cards: HeroCard[] = [];
+  if (showBirthday && daysToBday !== null) {
+    cards.push({
+      id: "h-birthday",
+      href: `/me/${slug}#birthday`,
+      eyebrow: "Birthday week",
+      title:
+        daysToBday === 0
+          ? "Happy birthday 🎉"
+          : daysToBday === 1
+            ? "1 day to your birthday"
+            : `${daysToBday} days to your birthday`,
+      description: "A comp Wash & Blow + bonus points are waiting at check-in.",
+      tone: "birthday",
+    });
   }
+  cards.push({
+    id: "h-feature",
+    href: "/book?category=braids",
+    eyebrow: "Trending this week",
+    title: "Bora Bora Boho",
+    description: "Oumou's signature boho knotless — mid-back, free part, honey accents.",
+    tone: "feature",
+    backgroundImage: featuredPhoto,
+  });
+  cards.push({
+    id: "h-refer",
+    href: `/me/${slug}/rewards`,
+    eyebrow: "Refer & earn",
+    title: "Bring a friend, both get 100 pts",
+    description: "Drops into your rewards as soon as they finish their first visit.",
+    tone: "refer",
+  });
+  cards.push({
+    id: "h-concierge",
+    href: "/demo/sms",
+    eyebrow: "AI SMS Concierge",
+    title: "Text us anything, anytime",
+    description: "Booking changes, prep questions, lost items — answered in seconds.",
+    tone: "concierge",
+  });
+  return cards;
+}
 
+// ───────────────────── sub-components ─────────────────────
+
+function BirthdayHero({ daysAway, tier }: { daysAway: number; tier: string }) {
+  const gifts: { label: string; sub?: string }[] = [
+    { label: "Comp Wash & Blow", sub: "Auto-applied at check-in" },
+    { label: "200 bonus points", sub: "Drops in 24h before your visit" },
+  ];
+  if (tier === "Platinum" || tier === "Gold") {
+    gifts.push({ label: "Hand-written card from Diéssou", sub: "Mailed to you" });
+  }
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-gold/50 bg-gradient-to-br from-gold-soft via-paper to-brand-50 p-5">
+    <section
+      id="birthday"
+      className="relative overflow-hidden rounded-2xl border border-gold/50 bg-gradient-to-br from-gold-soft via-paper to-brand-50 p-5"
+    >
       <div className="absolute right-4 top-4 text-gold/60">
         <Sparkles className="h-6 w-6" />
       </div>
       <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-brand">
-        <Cake className="h-3.5 w-3.5" /> Birthday week · {tier} tier
+        <Cake className="h-3.5 w-3.5" /> 🎂 Birthday week · {tier} tier
       </div>
       <h2 className="mt-2 font-serif text-2xl font-semibold text-brand">
         {daysAway === 0 ? "Happy birthday!" : daysAway === 1 ? "1 day away" : `${daysAway} days away`}
       </h2>
-      <p className="mt-2 max-w-xs text-sm text-ink-700">
-        Surprises waiting for you when you walk in. We can&apos;t wait to spoil you.
-      </p>
       <ul className="mt-4 space-y-2">
         {gifts.map((g, i) => (
-          <li
-            key={i}
-            className="flex items-start gap-3 rounded-lg border border-gold/40 bg-white/70 p-2.5"
-          >
+          <li key={i} className="flex items-start gap-3 rounded-lg border border-gold/40 bg-white/70 p-2.5">
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold/20 text-brand">
               <Gift className="h-3.5 w-3.5" />
             </div>
@@ -78,51 +136,52 @@ function BirthdayHero({
   );
 }
 
-function RewardsCard({ client, slug }: { client: Client; slug: string }) {
-  const points = pointsFor(client);
-  const tier = tierFor(client);
-  const next = nextTierFor(client);
+function UpcomingApptCard({
+  appt,
+  clientSlug,
+  birthdayFlag,
+}: {
+  appt: Appointment;
+  clientSlug: string;
+  birthdayFlag?: boolean;
+}) {
+  const todayLike = appt.date <= TODAY;
   return (
-    <Link
-      href={`/me/${slug}/rewards`}
-      className="group block overflow-hidden rounded-2xl border border-ink-200 bg-gradient-to-br from-brand-50 to-paper hover:border-brand"
-    >
-      <div className="flex items-center gap-3 px-4 py-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white">
-          <Trophy className="h-4 w-4" />
+    <section className="overflow-hidden rounded-2xl border border-brand/30 bg-white shadow-sm">
+      <Link href={`/me/${clientSlug}/bookings/${appt.id}`} className="block px-4 pt-4 pb-3 hover:bg-paper">
+        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
+          <Calendar className="h-3 w-3" /> Upcoming
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-            {tier} member
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-serif text-xl font-semibold text-brand tabular-nums">
-              {points.toLocaleString("en-US")}
-            </span>
-            <span className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-              points
-            </span>
-          </div>
-          {next && (
-            <div className="font-mono text-[10px] text-ink-500">
-              {next.pointsToGo} pts to {next.tier}
-            </div>
+        <h3 className="mt-1 text-base font-semibold text-ink-900">{appt.service}</h3>
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-ink-700">
+          <span>{appt.date}</span>
+          <span className="text-ink-300">·</span>
+          <span>{appt.start}</span>
+          {appt.staff && (
+            <>
+              <span className="text-ink-300">·</span>
+              <span>with {appt.staff}</span>
+            </>
           )}
         </div>
-        <ChevronRight className="h-4 w-4 text-ink-300 group-hover:text-brand" />
-      </div>
-    </Link>
+        {birthdayFlag && (
+          <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-gold-soft px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-brand">
+            <Cake className="h-3 w-3" /> Comp Wash & Blow included
+          </div>
+        )}
+      </Link>
+      <Link
+        href={`/me/${clientSlug}/checkin`}
+        className="flex items-center justify-center gap-1.5 border-t border-ink-200 bg-brand py-2.5 text-xs font-semibold text-white hover:bg-brand-700"
+      >
+        <QrCode className="h-3.5 w-3.5" />
+        {todayLike ? "Check in now" : "Open check-in QR"}
+      </Link>
+    </section>
   );
 }
 
-function RebookCard({
-  client,
-  lastAppt,
-}: {
-  client: Client;
-  lastAppt: Appointment;
-}) {
-  const stylist = lastAppt.staff ? resolveStylist(lastAppt.staff.toLowerCase().replace(/\s+/g, "-")) : undefined;
+function RebookCard({ client, lastAppt }: { client: Client; lastAppt: Appointment }) {
   return (
     <Link
       href={`/book?as=${client.slug}`}
@@ -134,7 +193,7 @@ function RebookCard({
         </div>
         <h3 className="mt-1 truncate text-base font-semibold text-ink-900">{lastAppt.service}</h3>
         <p className="mt-0.5 truncate text-xs text-ink-500">
-          {stylist ? `with ${stylist.name}` : lastAppt.staff ? `with ${lastAppt.staff}` : ""}
+          {lastAppt.staff ? `with ${lastAppt.staff}` : ""}
         </p>
       </div>
       <ChevronRight className="h-5 w-5 shrink-0 text-ink-300 group-hover:text-brand" />
@@ -142,117 +201,85 @@ function RebookCard({
   );
 }
 
-function UpcomingApptCard({
-  appt,
-  clientSlug,
-  birthdayFlag,
-}: {
-  appt: Appointment;
-  clientSlug: string;
-  birthdayFlag?: boolean;
-}) {
+function RewardsCard({ client, slug }: { client: Client; slug: string }) {
+  const points = pointsFor(client);
+  const tier = tierFor(client);
+  const next = nextTierFor(client);
+  const progress = next
+    ? Math.min(100, Math.max(5, Math.round(((next.min - next.pointsToGo) / next.min) * 100)))
+    : 100;
   return (
     <Link
-      href={`/me/${clientSlug}/bookings/${appt.id}`}
-      className="block rounded-2xl border border-ink-200 bg-white p-4 hover:border-brand"
+      href={`/me/${slug}/rewards`}
+      className="group block overflow-hidden rounded-2xl border border-ink-200 bg-gradient-to-br from-brand via-brand-700 to-[#2a0e16] text-white shadow-sm hover:shadow-md"
     >
-      <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-ink-500">
-        <Calendar className="h-3 w-3" /> Upcoming
+      <div className="flex items-center gap-3 px-4 pt-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15">
+          <Trophy className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-white/70">
+            🎁 {tier} member
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-serif text-2xl font-semibold tabular-nums">
+              {points.toLocaleString("en-US")}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-white/70">
+              points
+            </span>
+          </div>
+        </div>
+        <ChevronRight className="h-4 w-4 text-white/60 group-hover:text-white" />
       </div>
-      <h3 className="mt-1 text-base font-semibold text-ink-900">{appt.service}</h3>
-      <div className="mt-1 flex items-center gap-2 text-xs text-ink-700">
-        <span>{appt.date}</span>
-        <span className="text-ink-300">·</span>
-        <span>{appt.start}</span>
-        {appt.staff && <span className="text-ink-300">·</span>}
-        {appt.staff && <span>with {appt.staff}</span>}
-      </div>
-      {birthdayFlag && (
-        <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-gold-soft px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-brand">
-          <Cake className="h-3 w-3" /> Comp Wash &amp; Blow included
+      {next && (
+        <div className="px-4 pb-4 pt-3">
+          <div className="flex items-center justify-between text-[10px] text-white/80">
+            <span>{next.pointsToGo} pts to {next.tier}</span>
+            <span className="font-mono">{progress}%</span>
+          </div>
+          <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-white/15">
+            <div className="h-full rounded-full bg-gold" style={{ width: `${progress}%` }} />
+          </div>
         </div>
       )}
     </Link>
   );
 }
 
-function JourneyPreview({ clientSlug }: { clientSlug: string }) {
-  const entries = journeyForClient(clientSlug).slice(0, 2);
-  if (entries.length === 0) return null;
-  return (
-    <section>
-      <div className="mb-2 flex items-center justify-between">
-        <div className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-          Your hair journey
-        </div>
-        <Link
-          href={`/me/${clientSlug}/journey`}
-          className="font-mono text-[10px] uppercase tracking-wider text-brand hover:underline"
-        >
-          View all
-        </Link>
-      </div>
-      <div className="grid grid-cols-2 gap-2">
-        {entries.map((e) => {
-          const [start, end] = CATEGORY_PALETTES.braids;
-          return (
-            <div key={e.id} className="overflow-hidden rounded-xl border border-ink-200 bg-white">
-              <div
-                className="aspect-square w-full"
-                style={
-                  e.afterPhoto
-                    ? { backgroundImage: `url(${e.afterPhoto})`, backgroundSize: "cover", backgroundPosition: "center" }
-                    : { background: `linear-gradient(140deg, ${start}, ${end})` }
-                }
-              />
-              <div className="px-2 py-1.5">
-                <div className="truncate text-xs font-medium text-ink-900">{e.serviceName}</div>
-                <div className="font-mono text-[9px] text-ink-500">{e.date}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
 function ColdStartWelcome({ client }: { client: Client }) {
   return (
-    <section className="space-y-3">
-      <div className="rounded-2xl border border-ink-200 bg-white p-5">
-        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
-          <Sparkles className="h-3 w-3" /> Welcome to Jolieden
-        </div>
-        <h2 className="mt-2 font-serif text-xl font-semibold text-brand">
-          Hey {client.firstName} — let&apos;s find your next look.
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-ink-700">
-          Browse photos of finished styles from our gallery, tap any one you love, and we&apos;ll
-          pre-fill the details. No long forms.
-        </p>
-        <Link
-          href={`/book?as=${client.slug}`}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-        >
-          Browse the gallery
-          <ChevronRight className="h-4 w-4" />
-        </Link>
+    <section className="space-y-3 rounded-2xl border border-ink-200 bg-white p-5">
+      <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
+        <Sparkles className="h-3 w-3" /> ✨ Welcome to Jolieden
       </div>
-      <div className="rounded-2xl border border-ink-200 bg-paper p-4">
-        <div className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-          Suggested for you
-        </div>
-        <p className="mt-1 text-sm text-ink-900">
-          Based on what you booked before, try <span className="font-medium text-brand">Honey Balayage</span> with
-          Dieynaba D. for your next color refresh.
-        </p>
-      </div>
+      <h2 className="font-serif text-xl font-semibold text-brand">
+        Hey {client.firstName} — let&apos;s find your next look.
+      </h2>
+      <p className="text-sm leading-relaxed text-ink-700">
+        Browse photos of finished styles, tap any you love, and we&apos;ll pre-fill the rest. No long forms.
+      </p>
+      <Link
+        href={`/book?as=${client.slug}`}
+        className="inline-flex items-center gap-1.5 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+      >
+        Browse the gallery
+        <ChevronRight className="h-4 w-4" />
+      </Link>
     </section>
   );
 }
 
 // ───────────────────── page ─────────────────────
+
+function pickInspirations(client: Client, allStyles: Style[]): Style[] {
+  // Try preferred stylist's work first; fall back to most-popular.
+  if (client.preferredStylistSlug) {
+    const fromStylist = stylesByStylist(client.preferredStylistSlug);
+    if (fromStylist.length >= 4) return fromStylist.slice(0, 6);
+  }
+  return allStyles.slice(0, 6);
+}
 
 export default async function ClientHomePage({
   params,
@@ -268,7 +295,6 @@ export default async function ClientHomePage({
     .filter((a) => a.date >= TODAY && a.status !== "completed")
     .sort((a, b) => a.date.localeCompare(b.date));
   const nextAppt = upcoming[0];
-
   const completed = allAppts
     .filter((a) => a.status === "completed")
     .sort((a, b) => b.date.localeCompare(a.date));
@@ -281,24 +307,39 @@ export default async function ClientHomePage({
   const isColdStart = clientSlug === CAST.clients.coldStart;
   const isLoyalist = clientSlug === CAST.clients.loyalist;
 
+  const popular = popularStyles();
+  const inspirations = pickInspirations(client, popular);
+  const trending = popular.slice(0, 6);
+
+  const featuredPhoto = popular[0]?.photoUrl;
+  const heroCards = buildHeroCards(client, clientSlug, showBirthday, daysToBday, featuredPhoto);
+
+  // Stylist spotlight rotates between cast stylists based on the day of the
+  // demo TODAY constant (stable per build, varies per persona).
+  const castStylists = getCastStylists();
+  const dayIdx = parseInt(TODAY.slice(-2), 10) % castStylists.length;
+  const spotlight = client.preferredStylistSlug
+    ? castStylists.find((s) => s.slug === client.preferredStylistSlug) ?? castStylists[dayIdx]
+    : castStylists[dayIdx];
+
+  const recentJourney = journeyForClient(clientSlug).slice(0, 1)[0];
+
   return (
-    <div className="space-y-5 px-5 py-6">
+    <div className="space-y-5 px-4 pb-6 pt-4">
       {/* Greeting */}
-      <header>
+      <header className="px-1">
         <div className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-          {client.visits > 0 ? `${client.visits} visits` : "New to the salon"}
+          {client.visits > 0 ? `${client.visits} visits · welcome back` : "✨ Welcome"}
         </div>
-        <h1 className="mt-1 font-serif text-2xl font-semibold text-brand">
+        <h1 className="mt-0.5 font-serif text-[26px] font-semibold leading-tight text-ink-900">
           Hi, {client.firstName}
         </h1>
       </header>
 
-      {/* Birthday hero (only on the birthday persona) */}
-      {showBirthday && daysToBday !== null && (
-        <BirthdayHero daysAway={daysToBday} tier={tierFor(client)} />
-      )}
+      {/* Hero carousel */}
+      <HeroCarousel cards={heroCards} />
 
-      {/* Upcoming appointment */}
+      {/* Upcoming appointment + check-in CTA */}
       {nextAppt && (
         <UpcomingApptCard
           appt={nextAppt}
@@ -307,25 +348,43 @@ export default async function ClientHomePage({
         />
       )}
 
+      {/* Birthday hero (Naomi only, in addition to the carousel card) */}
+      {showBirthday && daysToBday !== null && (
+        <BirthdayHero daysAway={daysToBday} tier={tierFor(client)} />
+      )}
+
       {/* Loyalist: rebook your usual */}
       {isLoyalist && lastCompleted && <RebookCard client={client} lastAppt={lastCompleted} />}
 
-      {/* Cold-start: welcome + suggested */}
+      {/* Cold-start: welcome */}
       {isColdStart && !lastCompleted && <ColdStartWelcome client={client} />}
 
-      {/* Rewards card — every persona */}
+      {/* Rewards card */}
       <RewardsCard client={client} slug={clientSlug} />
 
-      {/* Hair journey preview */}
-      <JourneyPreview clientSlug={clientSlug} />
+      {/* Inspired by you */}
+      <PhotoRow
+        title={recentJourney ? `Like your last ${recentJourney.serviceName.toLowerCase()}` : "Picked for you"}
+        eyebrow="✨ Inspired by your style"
+        styles={inspirations}
+        seeAllHref="/book"
+      />
 
-      {/* Care tips (light) */}
-      <section className="rounded-2xl border border-ink-200 bg-white p-4">
-        <div className="flex items-center justify-between">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
-            Care tips
-          </div>
-          <Star className="h-4 w-4 text-gold" />
+      {/* Stylist spotlight */}
+      {spotlight && <StylistSpotlight stylist={spotlight} />}
+
+      {/* Trending */}
+      <PhotoRow
+        title="Trending this month"
+        eyebrow="🔥 Most booked at Jolieden"
+        styles={trending}
+        seeAllHref="/book"
+      />
+
+      {/* Care tip — keep small */}
+      <section className="rounded-2xl border border-ink-200 bg-paper p-4">
+        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-brand">
+          💡 Care tip
         </div>
         <p className="mt-1 text-sm text-ink-700">
           Sleep on a silk pillowcase to extend the life of your braids by 1–2 weeks.
