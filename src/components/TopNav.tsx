@@ -8,7 +8,6 @@ import {
   Search,
   Clock,
   Settings,
-  LayoutGrid,
 } from "lucide-react";
 import clsx from "clsx";
 import { NotificationsBell } from "./NotificationsBell";
@@ -118,16 +117,10 @@ export function TopNav() {
         })}
       </nav>
 
-      {/* Right cluster */}
+      {/* Right cluster — Demo Hub moved to a floating button at bottom-right
+          (see DemoHubFab component) so it doesn't compete with the operator
+          nav on every screen. */}
       <div className="flex items-center gap-1 pr-3">
-        <Link
-          href="/demo"
-          className="flex items-center gap-1.5 rounded-md px-2 py-1.5 text-[12px] font-medium text-white/70 hover:bg-white/10 hover:text-white"
-          title="Demo Hub"
-        >
-          <LayoutGrid className="h-4 w-4" />
-          <span>Demo Hub</span>
-        </Link>
         <Link
           href="/timeclock"
           aria-label="Time clock"

@@ -21,7 +21,10 @@ type Comment = {
 const AUTHOR_KEY = "jolieden.commentAuthor";
 const POS_KEY = "jolieden.commentWidgetPos";
 
-const DEFAULT_POS = { x: 24, y: 24 }; // offset from bottom-right corner
+// Default offset from bottom-right corner. y=88 leaves room for the
+// DemoHubFab (44px button + 24px margin + ~20px stacking spacing) so the
+// two stack cleanly without overlapping at the default position.
+const DEFAULT_POS = { x: 24, y: 88 };
 
 function relativeTime(iso: string): string {
   const then = new Date(iso).getTime();
