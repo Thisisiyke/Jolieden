@@ -13,6 +13,7 @@ import {
   Scissors,
   ArrowRight,
   Sparkles,
+  MessageSquare,
 } from "lucide-react";
 import {
   getOwner,
@@ -328,6 +329,33 @@ export default function DemoHubPage() {
             scenario, pre-filled and ready. Drop feedback on any screen with the floating chip
             (bottom-right); it goes straight to a GitHub issue.
           </p>
+
+          {/* Featured: AI SMS simulator */}
+          <Link
+            href="/demo/sms"
+            className="group mt-6 flex items-center gap-4 rounded-2xl border border-brand/30 bg-gradient-to-br from-brand-50 via-paper to-gold-soft p-4 transition-shadow hover:shadow-md sm:p-5"
+          >
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand text-white">
+              <MessageSquare className="h-5 w-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-brand px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-white">
+                  Featured
+                </span>
+                <span className="font-mono text-[11px] uppercase tracking-wider text-ink-500">
+                  AI SMS Concierge
+                </span>
+              </div>
+              <h3 className="mt-1 text-base font-semibold text-ink-900">
+                See what clients experience over SMS
+              </h3>
+              <p className="mt-0.5 text-sm text-ink-700">
+                Four scripted conversations (booking, FAQ, stylist takeover, late arrival) auto-play in an iMessage simulator.
+              </p>
+            </div>
+            <ArrowRight className="hidden h-5 w-5 shrink-0 text-brand transition-transform group-hover:translate-x-0.5 sm:block" />
+          </Link>
         </div>
       </header>
 
