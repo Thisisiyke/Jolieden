@@ -14,6 +14,7 @@ import clsx from "clsx";
 import { NotificationsBell } from "./NotificationsBell";
 import { ProfileMenu } from "./profile/ProfileMenu";
 import SearchPalette from "./SearchPalette";
+import LocationSwitcher from "./LocationSwitcher";
 
 const NAV = [
   { href: "/", label: "Front Desk" },
@@ -143,12 +144,10 @@ export function TopNav() {
           <Settings className="h-5 w-5" />
         </Link>
 
-        {/* Workspace name sits between Settings and Profile */}
-        <div className="leading-tight px-3 text-right">
-          <div className="text-[14px] font-semibold text-white">
-            Jolieden&apos;s Beauty Bar
-          </div>
-          <div className="text-[11px] text-white/60">Frederick Douglass</div>
+        {/* Location switcher replaces the static workspace label.
+            Multi-Location support per Diéssou's Apr-15 Must-Have. */}
+        <div className="px-2">
+          <LocationSwitcher />
         </div>
 
         <ProfileMenu />

@@ -72,13 +72,67 @@ export const FORMS_AND_CHARTS: FormOrChart[] = [
 export type Location = {
   id: string;
   name: string;
+  shortName: string; // for header chips
   address: string;
+  city: string;
   phone: string;
+  hours: string;
+  staffCount: number;
+  chairsCount: number;
+  todayRevenue: number; // for centralized reporting
   active: boolean;
+  flagshipName?: string; // e.g. "Diéssou" — the on-site owner
 };
+
+// Multi-location support per Diéssou's Apr-15 Must-Have. The Frederick
+// Douglass shop is the flagship; Atlanta is a sister location; Houston is
+// a recently-opened pop-up that's testing the franchise playbook.
 export const LOCATIONS: Location[] = [
-  { id: "loc1", name: "Frederick Douglass", address: "1812 Frederick Douglass Blvd, New York, NY 10026", phone: "(347) 555-0100", active: true },
+  {
+    id: "loc1",
+    name: "Jolieden — Frederick Douglass",
+    shortName: "NYC · Harlem",
+    address: "1812 Frederick Douglass Blvd, New York, NY 10026",
+    city: "New York, NY",
+    phone: "(347) 555-0100",
+    hours: "Mon–Sat · 9am–7pm",
+    staffCount: 9,
+    chairsCount: 8,
+    todayRevenue: 4280,
+    active: true,
+    flagshipName: "Diéssou",
+  },
+  {
+    id: "loc2",
+    name: "Jolieden — West End Atlanta",
+    shortName: "ATL · West End",
+    address: "640 Lee St SW, Atlanta, GA 30310",
+    city: "Atlanta, GA",
+    phone: "(404) 555-0188",
+    hours: "Tue–Sun · 10am–8pm",
+    staffCount: 6,
+    chairsCount: 6,
+    todayRevenue: 2860,
+    active: true,
+    flagshipName: "Adja T.",
+  },
+  {
+    id: "loc3",
+    name: "Jolieden — Third Ward Houston",
+    shortName: "HOU · Third Ward (pop-up)",
+    address: "2802 Truxillo St, Houston, TX 77004",
+    city: "Houston, TX",
+    phone: "(832) 555-0212",
+    hours: "Wed–Sun · 11am–7pm",
+    staffCount: 3,
+    chairsCount: 4,
+    todayRevenue: 1620,
+    active: true,
+    flagshipName: "Mariama T.",
+  },
 ];
+
+export const DEFAULT_LOCATION_ID = LOCATIONS[0].id;
 
 export type Offer = {
   id: string;

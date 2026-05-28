@@ -459,6 +459,85 @@ export type ConversationTurn = {
   ts?: string;
 };
 
+// Oopsie / Repair tracking — clients report issues with a previous service,
+// upload photos + notes, and the salon books a fix. Per Diéssou's Must-Have
+// "Client can report and request fixes to previous service by uploading
+// photos of hair and include comments/Notes."
+export type RepairStatus = "open" | "in-review" | "scheduled" | "resolved";
+
+export type RepairRequest = {
+  id: string;
+  clientName: string;
+  clientSlug?: string;
+  originalApptId?: string;
+  originalService?: string;
+  originalStylist?: string;
+  reportedAt: string; // YYYY-MM-DD
+  description: string;
+  photoCount: number; // mock — number of attached photos
+  status: RepairStatus;
+  staffNotes?: string;
+  scheduledFor?: string; // ISO date when a repair appt is booked
+  resolvedAt?: string;
+};
+
+export const REPAIRS: RepairRequest[] = [
+  {
+    id: "rp1",
+    clientName: "Tahirah Patrick",
+    clientSlug: undefined,
+    originalApptId: "a14",
+    originalService: "Knotless Braids",
+    originalStylist: "Naomi K.",
+    reportedAt: "2026-04-12",
+    description:
+      "Braids unraveled at the nape after 3 days. Edges are also itchy and pulling. Photos attached.",
+    photoCount: 3,
+    status: "open",
+    staffNotes: "Schedule with Oumou for tightening on Wed afternoon if possible.",
+  },
+  {
+    id: "rp2",
+    clientName: "Brianna Lee",
+    originalApptId: "a16",
+    originalService: "Silk Press",
+    originalStylist: "Naomi K.",
+    reportedAt: "2026-04-10",
+    description:
+      "Press went limp the next day. Hair feels coated. Reaction to product?",
+    photoCount: 2,
+    status: "in-review",
+    staffNotes: "Awaiting Naomi's notes from intake form.",
+  },
+  {
+    id: "rp3",
+    clientName: "Ayanna Cole",
+    originalApptId: "a09",
+    originalService: "Box Braids — Waist",
+    originalStylist: "Mame Diarra",
+    reportedAt: "2026-04-08",
+    description:
+      "Two braids fell out near the crown. Otherwise lasting beautifully.",
+    photoCount: 1,
+    status: "scheduled",
+    scheduledFor: "2026-04-16",
+  },
+  {
+    id: "rp4",
+    clientName: "Aaliyah Jackson",
+    clientSlug: "aaliyah-j",
+    originalApptId: "a25",
+    originalService: "Knotless Braids",
+    originalStylist: "Mame Diarra",
+    reportedAt: "2026-04-01",
+    description:
+      "A few braids loosened around week 4. Fixed in 15 min, comp'd. Aaliyah was very gracious.",
+    photoCount: 0,
+    status: "resolved",
+    resolvedAt: "2026-04-02",
+  },
+];
+
 export type Conversation = {
   id: string;
   name: string;

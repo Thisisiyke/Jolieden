@@ -246,6 +246,11 @@ export default async function ProfilePage({
       {/* Privacy + account */}
       <Section title="Account">
         <Row label="Privacy" href="#" trailing={<ShieldCheck className="h-3.5 w-3.5 text-ink-400" />} />
+        <Row
+          label="Report a service issue"
+          value="Free fix"
+          href={`/me/${client.slug}/report-issue`}
+        />
         <Row label="Help & support" href="#" />
         <div className="border-b border-ink-200 last:border-b-0">
           <button

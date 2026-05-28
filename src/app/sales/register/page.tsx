@@ -1,14 +1,38 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ArrowDownToLine, ArrowUpFromLine, Calculator } from "lucide-react";
+import { ChevronDown, ArrowDownToLine, ArrowUpFromLine, Calculator, X, Check } from "lucide-react";
 import { SalesTabs } from "../../../components/sales/SalesTabs";
 import { DRAWERS } from "../../../lib/sales";
+
+type ModalKind = null | "in" | "out" | "count";
 
 export default function RegisterPage() {
   const [selectedId, setSelectedId] = useState(DRAWERS[0].id);
   const [visibleCount, setVisibleCount] = useState(4);
   const drawer = DRAWERS.find((d) => d.id === selectedId)!;
+  const [modal, setModal] = useState<ModalKind>(null);
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [success, setSuccess] = useState<string | null>(null);
+
+  const closeModal = () => {
+    setModal(null);
+    setAmount("");
+    setNote("");
+  };
+
+  const submitModal = () => {
+    if (!amount) return;
+    const action =
+      modal === "in" ? "Pay-In" : modal === "out" ? "Pay-Out" : "Drawer count";
+    setSuccess(`${action} of $${amount} recorded · ${new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`);
+    closeModal();
+    window.setTimeout(() => setSuccess(null), 3500);
+  };
+
+  // Variance for closed drawers (mock: expected - 12 = "actual").
+  const variance = drawer.current ? null : Math.round((drawer.expected - 12) * 100) / 100;
 
   const rows = [
     { label: "Cash Sales", value: drawer.cashSales },
@@ -82,27 +106,123 @@ export default function RegisterPage() {
               <span className="text-[14px] font-bold text-ink-900">Expected In Drawer</span>
               <span className="text-[18px] font-bold text-brand">${drawer.expected.toFixed(2)}</span>
             </div>
+            {variance !== null && (
+              <div className={
+                "px-5 py-3 border-t border-ink-200 flex items-center justify-between text-[13px] " +
+                (variance === 0 ? "bg-status-confirmed/5 text-status-confirmed" : "bg-rose-50 text-rose-700")
+              }>
+                <span className="font-mono uppercase tracking-wider text-[10px]">End-of-day variance</span>
+                <span className="font-semibold">
+                  {variance === 0 ? "Balanced ✓" : variance > 0 ? `+$${variance}` : `-$${Math.abs(variance)}`}
+                </span>
+              </div>
+            )}
           </div>
 
           {drawer.current && (
             <div className="mt-4 grid grid-cols-3 gap-3">
-              <ActionBtn icon={<ArrowDownToLine className="h-4 w-4" />} label="Pay-In" />
-              <ActionBtn icon={<ArrowUpFromLine className="h-4 w-4" />} label="Pay-Out" />
-              <ActionBtn icon={<Calculator className="h-4 w-4" />} label="Count Drawer" primary />
+              <ActionBtn icon={<ArrowDownToLine className="h-4 w-4" />} label="Pay-In" onClick={() => setModal("in")} />
+              <ActionBtn icon={<ArrowUpFromLine className="h-4 w-4" />} label="Pay-Out" onClick={() => setModal("out")} />
+              <ActionBtn icon={<Calculator className="h-4 w-4" />} label="Count Drawer" primary onClick={() => setModal("count")} />
+            </div>
+          )}
+
+          {/* Success toast */}
+          {success && (
+            <div className="mt-3 flex items-center gap-2 rounded-md border border-status-confirmed/30 bg-status-confirmed/5 px-3 py-2 text-[13px] text-status-confirmed">
+              <Check className="h-3.5 w-3.5" />
+              {success}
             </div>
           )}
         </main>
       </div>
+
+      {/* Modal */}
+      {modal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
+          onClick={closeModal}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-xl border border-ink-200 bg-white shadow-2xl"
+          >
+            <header className="flex items-center justify-between border-b border-ink-200 px-4 py-3">
+              <h2 className="text-[15px] font-semibold text-ink-900">
+                {modal === "in" ? "Cash Pay-In" : modal === "out" ? "Cash Pay-Out" : "Count Drawer"}
+              </h2>
+              <button type="button" onClick={closeModal} aria-label="Close" className="rounded p-1 text-ink-500 hover:bg-ink-100">
+                <X className="h-4 w-4" />
+              </button>
+            </header>
+            <div className="space-y-3 px-4 py-4">
+              <div>
+                <label className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+                  {modal === "count" ? "Counted total" : "Amount"}
+                </label>
+                <input
+                  type="number"
+                  autoFocus
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="mt-1 w-full rounded-md border border-ink-300 bg-white px-3 py-2 text-base focus:border-brand focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+                  Note (optional)
+                </label>
+                <input
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder={modal === "in" ? "Source of cash" : modal === "out" ? "Reason for pay-out" : "Reconciler initials"}
+                  className="mt-1 w-full rounded-md border border-ink-300 bg-white px-3 py-2 text-sm focus:border-brand focus:outline-none"
+                />
+              </div>
+              {modal === "count" && (
+                <div className="rounded-md bg-paper px-3 py-2 text-xs text-ink-700">
+                  Expected: <strong className="text-brand">${drawer.expected.toFixed(2)}</strong>
+                  {amount && (
+                    <>
+                      {" · Variance: "}
+                      <strong className={Number(amount) === drawer.expected ? "text-status-confirmed" : "text-rose-700"}>
+                        {Number(amount) === drawer.expected
+                          ? "$0 ✓"
+                          : `${Number(amount) > drawer.expected ? "+" : "-"}$${Math.abs(Number(amount) - drawer.expected).toFixed(2)}`}
+                      </strong>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+            <footer className="flex items-center justify-end gap-2 border-t border-ink-200 px-4 py-3">
+              <button type="button" onClick={closeModal} className="rounded-md border border-ink-300 bg-white px-3 py-1.5 text-sm font-medium text-ink-700 hover:bg-ink-50">
+                Cancel
+              </button>
+              <button type="button" onClick={submitModal} disabled={!amount} className="rounded-md bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50">
+                {modal === "count" ? "Reconcile" : "Record"}
+              </button>
+            </footer>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function ActionBtn({ icon, label, primary }: { icon: React.ReactNode; label: string; primary?: boolean }) {
+function ActionBtn({ icon, label, primary, onClick }: { icon: React.ReactNode; label: string; primary?: boolean; onClick: () => void }) {
   return (
-    <button className={
-      "h-12 rounded-lg text-[14px] font-semibold inline-flex items-center justify-center gap-2 " +
-      (primary ? "bg-brand text-white hover:bg-brand-700" : "bg-white border border-ink-300 text-ink-700 hover:bg-ink-50")
-    }>
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        "h-12 rounded-lg text-[14px] font-semibold inline-flex items-center justify-center gap-2 " +
+        (primary ? "bg-brand text-white hover:bg-brand-700" : "bg-white border border-ink-300 text-ink-700 hover:bg-ink-50")
+      }
+    >
       {icon} {label}
     </button>
   );
