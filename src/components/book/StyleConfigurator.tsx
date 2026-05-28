@@ -163,6 +163,17 @@ export default function StyleConfigurator({ style, service, asClient }: Props) {
             <span>·</span>
             <span>{formatDuration(service.baseDurationMin)}</span>
           </div>
+          {/* See it on you — opens the mock AR try-on. Only shown when we
+              know who the client is (asClient prop), since the try-on
+              screen lives under /me/[slug]/. */}
+          {asClient && (
+            <a
+              href={`/me/${asClient}/try-on/${style.slug}`}
+              className="mt-3 flex items-center justify-center gap-1.5 rounded-md border border-brand bg-brand-50 py-2.5 text-sm font-semibold text-brand hover:bg-brand hover:text-white"
+            >
+              <span>✨ See it on you</span>
+            </a>
+          )}
         </div>
       </div>
 
