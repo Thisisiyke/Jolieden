@@ -407,6 +407,170 @@ PostgREST via Supabase JS SDK (`supabase.from('appointments').select(...)`). Rep
 | `POST /api/kiosk/checkin` | `{qr_payload or phone}` | Matches client + flips appointment status to `arrived` |
 | `POST /api/stripe/webhook` | Stripe event (signed) | Syncs `payments.status`, retries failed Connect transfers |
 
+### 4.4.1 The `book_appointment` RPC — concurrency strategy
+
+The most-trafficked write path. Two clients (one in `/book`, one via AI SMS) can race to grab the same slot. The locking strategy is:
+
+**`tstzrange` exclusion constraint over `(staff_id, time_range)`** — Postgres rejects overlaps at insert time, atomically, without any application-level locking.
+
+```sql
+-- Add to appointments:
+alter table appointments
+  add column time_range tstzrange
+    generated always as (tstzrange(starts_at, ends_at, '[)')) stored;
+
+-- Exclusion constraint — Postgres uses GiST index to detect overlap.
+-- Excludes only "live" statuses (cancelled/noshow rows can overlap with replacements).
+create extension if not exists btree_gist;
+
+alter table appointments
+  add constraint no_overlapping_appointments
+    exclude using gist (
+      staff_id with =,
+      time_range with &&
+    )
+    where (status in ('unconfirmed', 'confirmed', 'arrived', 'active', 'completed'));
+```
+
+**The RPC** uses the constraint as the source of truth:
+
+```sql
+create or replace function book_appointment(
+  p_client_id uuid,
+  p_staff_id uuid,
+  p_service_id uuid,
+  p_starts_at timestamptz,
+  p_ends_at timestamptz,
+  p_modifier_choices jsonb,
+  p_addon_ids uuid[],
+  p_payment_method_id text,  -- Stripe pm_xxx
+  p_ai_booked bool default false
+)
+returns appointments
+language plpgsql
+security definer  -- so RLS doesn't block inserts during the txn
+as $$
+declare
+  v_appt appointments;
+  v_deposit_intent text;
+begin
+  -- Insert; constraint trips on overlap.
+  begin
+    insert into appointments (
+      client_id, staff_id, service_id, starts_at, ends_at,
+      modifier_choices, addon_ids, status, ai_booked
+    ) values (
+      p_client_id, p_staff_id, p_service_id, p_starts_at, p_ends_at,
+      p_modifier_choices, p_addon_ids, 'unconfirmed', p_ai_booked
+    )
+    returning * into v_appt;
+  exception
+    when exclusion_violation then
+      raise exception 'slot_taken' using errcode = '23P01';
+  end;
+
+  -- Charge deposit OUTSIDE the txn via a side-effect function; if it fails
+  -- the appointment row stays 'unconfirmed' and a cleanup job sweeps after
+  -- 5 min. We don't want to hold the row lock during a Stripe API call.
+  perform pg_notify('charge_deposit', json_build_object(
+    'appointment_id', v_appt.id,
+    'payment_method_id', p_payment_method_id
+  )::text);
+
+  -- Audit
+  insert into audit_log (org_id, location_id, actor_user_id, actor_type,
+    entity_type, entity_id, action, after)
+  values (
+    v_appt.org_id, v_appt.location_id, auth.uid(),
+    case when p_ai_booked then 'ai' else 'client' end,
+    'appointment', v_appt.id, 'created',
+    to_jsonb(v_appt)
+  );
+
+  return v_appt;
+end;
+$$;
+```
+
+**Properties of this design:**
+
+| Concern | How handled |
+|---|---|
+| Two clients book the same slot | Constraint trips on the second `INSERT`; the first wins. Loser gets `exclusion_violation` exception → API returns `409 slot_taken`. |
+| Stripe API call latency holds row lock | Stripe happens *after* commit via `pg_notify` listener (a separate worker). Appointment row commits in <50ms. |
+| Deposit charge fails | Worker updates `appointments.status = 'cancelled'` + `cancellation_reason = 'deposit_failed'`. Client sees a "we couldn't charge your card, try again" via SMS. |
+| Held-but-unpaid appointments leak | Cron sweep every 5 min: `DELETE FROM appointments WHERE status = 'unconfirmed' AND created_at < now() - interval '5 minutes'`. |
+| AI calls `commit_booking` concurrently with web client | Same constraint. Whoever's `INSERT` lands first wins. |
+
+**Alternative considered and rejected:** `SERIALIZABLE` isolation level with a `SELECT FOR UPDATE` on `staff` + time-window. Works but serializes all booking attempts org-wide, which kills throughput at >2 locations. The exclusion-constraint approach scales horizontally because Postgres handles overlap detection per `staff_id` independently.
+
+**Test coverage** (required, see [§12.5.2](#1252-rls-fuzz-harness-example)): pgTAP test that fires 20 concurrent `book_appointment` calls for the same `(staff_id, starts_at)` and asserts exactly 1 succeeds.
+
+### 4.4.2 Stripe Connect — stylist onboarding flow
+
+```
+┌──────────────────────────┐
+│  New stylist hired       │
+└────────────┬─────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────┐
+│  Owner creates staff row in /owner/staff                │
+│  POST /api/staff/invite                                  │
+│    └─ Creates staff row (status='pending_connect')      │
+│    └─ Creates Supabase Auth user (magic link sent)      │
+│    └─ Creates Stripe Connect Express account            │
+│       └─ stripe.accounts.create({type:'express',         │
+│            country:'US', email, capabilities:           │
+│            { card_payments: { requested: true },         │
+│              transfers: { requested: true }}})           │
+│    └─ Stores account.id in staff.stripe_account_id      │
+│    └─ Generates onboarding link:                         │
+│       stripe.accountLinks.create({account, type:        │
+│         'account_onboarding', refresh_url, return_url}) │
+│    └─ Sends magic-link email with embedded Stripe URL   │
+└────────────┬─────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────┐
+│  Stylist clicks magic link                              │
+│  → Logs into /pro web preview                            │
+│  → "Complete payment setup" banner forces onboarding    │
+│  → Redirects to Stripe-hosted onboarding URL            │
+│  → Stylist provides: name, DOB, SSN last 4, address,    │
+│      bank routing + account, photo ID                   │
+│  → Stripe verifies in 1-3 business days                 │
+└────────────┬─────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────┐
+│  Stripe webhook: account.updated                         │
+│  POST /api/stripe/webhook                                │
+│    └─ If charges_enabled && payouts_enabled:            │
+│         UPDATE staff SET                                 │
+│           stripe_account_status = 'active',              │
+│           status = 'active'                              │
+│         WHERE stripe_account_id = ?                      │
+│    └─ Sends "you're all set" SMS to stylist             │
+│    └─ Stylist now appears in /book stylist picker       │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Account states** (`staff.stripe_account_status`):
+
+| State | Meaning | What works |
+|---|---|---|
+| `pending_invite` | Magic link sent, not clicked | Nothing |
+| `pending_connect` | Magic link clicked, Stripe onboarding incomplete | Stylist can browse `/pro` but isn't bookable |
+| `pending_verification` | Stripe collecting info (1-3 day waiting) | Same |
+| `active` | `charges_enabled && payouts_enabled` | Fully bookable, receives transfers |
+| `restricted` | Stripe paused (failed verification, unusual activity) | Existing appointments continue; new bookings blocked |
+| `disabled` | Off-boarded | Hidden from booking; existing payouts complete |
+
+**Refund flow with Connect**: refunds reverse the platform fee + Connect transfer atomically via Stripe's `refund_application_fee: true`. If the stylist has already drawn down their balance, Stripe pulls from their bank — handled gracefully by Stripe; our code just calls the standard refund API.
+
+**Webhook handling** for `account.updated` lives in `app/api/stripe/webhook/route.ts`. Signature verified with `stripe.webhooks.constructEvent` using `STRIPE_WEBHOOK_SECRET` env var.
+
 ### 4.5 Public unauthenticated endpoints (marketing site → booking flow)
 
 - `GET /api/book/quote?service=<slug>&modifiers=<json>` — no auth, returns price + duration estimate
@@ -1360,7 +1524,116 @@ create type clock_entry_type as enum ('clock_in', 'break_start', 'break_end', 'c
 
 See [AI_CONCIERGE.md §8.2](./AI_CONCIERGE.md#82-per-conversation-metrics-tracked) for the table definition. Roll up nightly into `daily_ai_metrics` materialized view for the `/messages/analytics` dashboard.
 
-### A.12 Locations + staff_locations
+### A.12 `waitlist_entries`
+
+For `/book/waitlist` and AI escalation overflow. Cron job nightly matches new openings against active entries and triggers SMS notifications.
+
+```sql
+create table waitlist_entries (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null,
+  location_id uuid references locations(id) not null,
+  client_id uuid references clients(id),  -- nullable for non-account leads
+  contact_phone text not null,             -- E.164
+  contact_name text,                       -- when no client_id
+  service_category service_category not null,
+  preferred_service_id uuid references services(id),
+  preferred_staff_id uuid references staff(id),
+  date_from date not null,
+  date_to date not null,
+  time_of_day waitlist_time_band not null default 'any',
+  status waitlist_status not null default 'active',
+  notified_appointment_id uuid references appointments(id),
+  notified_at timestamptz,
+  expires_at timestamptz not null,         -- default now() + interval '30 days'
+  source waitlist_source not null,         -- 'web_form' | 'ai_escalation' | 'staff_added'
+  notes text,
+  created_at timestamptz default now()
+);
+
+create type waitlist_time_band as enum ('morning', 'afternoon', 'evening', 'any');
+create type waitlist_status as enum ('active', 'notified', 'booked', 'expired', 'cancelled');
+create type waitlist_source as enum ('web_form', 'ai_escalation', 'staff_added');
+
+create index on waitlist_entries (location_id, status, date_from) where status = 'active';
+create index on waitlist_entries (contact_phone);
+```
+
+Matching cron (runs every 15 min):
+
+```sql
+-- Find waitlist entries where a matching slot just opened
+with new_slots as (
+  select staff_id, starts_at::date as day,
+         extract(hour from starts_at) as hour
+  from appointments
+  where status = 'cancelled'
+    and updated_at >= now() - interval '15 minutes'
+),
+matches as (
+  select w.*
+  from waitlist_entries w
+  join new_slots s on (
+    w.preferred_staff_id is null or w.preferred_staff_id = s.staff_id
+  )
+  where w.status = 'active'
+    and s.day between w.date_from and w.date_to
+    and (
+      w.time_of_day = 'any'
+      or (w.time_of_day = 'morning' and s.hour between 8 and 11)
+      or (w.time_of_day = 'afternoon' and s.hour between 12 and 16)
+      or (w.time_of_day = 'evening' and s.hour between 17 and 20)
+    )
+)
+-- For each match, queue SMS via Twilio (sent from a follow-up worker)
+update waitlist_entries
+  set status = 'notified', notified_at = now()
+  from matches m
+  where waitlist_entries.id = m.id;
+```
+
+### A.13 `client_intake_forms`
+
+For `/me/.../intake` and Phase-1 first-time-client intake.
+
+```sql
+create table client_intake_forms (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null,
+  client_id uuid references clients(id) not null,
+  appointment_id uuid references appointments(id),  -- nullable; intake can precede booking
+  -- Hair history
+  texture text,                              -- '3A' | '3B' | ... | '4C' | 'mix' | 'Type 2'
+  last_service_date date,
+  recent_chemical_processing bool,
+  recent_chemical_details text,
+  -- Accommodations
+  scalp_sensitivities text,
+  allergies text,
+  -- Reference photo (R2 URL)
+  reference_photo_url text,
+  -- Consent
+  consent_signed_at timestamptz,
+  consent_signature_method text,             -- 'drawn' | 'typed' | 'docusign'
+  consent_signature_url text,                -- R2 URL for the rendered signature image
+  consent_ip_address text,
+  consent_user_agent text,
+  consent_policy_version text,               -- which version of the consent text was signed
+  -- Form lifecycle
+  status intake_status not null default 'in_progress',
+  submitted_at timestamptz,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create type intake_status as enum ('in_progress', 'submitted', 'expired');
+
+create index on client_intake_forms (client_id, status);
+```
+
+The signature lives in two places: a rendered PNG in R2 (`consent_signature_url`) and the audit-trail metadata (IP, user-agent, policy version, timestamp). Signature + audit metadata together is what legal will need if a consent gets contested.
+
+### A.14 Locations + staff_locations
 
 ```sql
 create table locations (

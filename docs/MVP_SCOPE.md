@@ -32,7 +32,7 @@ Two weeks of paperwork and audits that must start Day 1 of week -2 (i.e. before 
 
 - [ ] **Services catalog audit** — `src/lib/catalog.ts` from the prototype contains placeholder prices. Diéssou confirms each service's name, base price, duration, and modifier options against her current price book. This is the source of truth for both AI quoting and booking-deposit math; getting it wrong costs revenue every appointment. **~3 hours with Diéssou.**
 - [ ] **Staff roster audit** — Names, phones, emails, roles, commission percentages, location assignments. Goes into `seed_staff.sql` for Phase 1 wk 2.
-- [ ] **Hours of operation per location** — JSON shape per `locations.hours_json` (see Appendix A.12). Holiday closures captured for the AI knowledge base.
+- [ ] **Hours of operation per location** — JSON shape per `locations.hours_json` (see [Architecture Appendix A.14](./ARCHITECTURE.md#a14-locations--staff_locations)). Holiday closures captured for the AI knowledge base.
 - [ ] **Cancellation / deposit / late policies** — Final wording, sign-off from Diéssou. Lives in `knowledge_documents` and is quoted verbatim by the AI.
 - [ ] **Prep instructions per service** — 1-2 paragraphs each. Knowledge-base seed content for Phase 2 AI launch (don't wait until Phase 2 to draft).
 
