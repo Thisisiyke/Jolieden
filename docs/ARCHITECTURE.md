@@ -120,35 +120,48 @@ All web surfaces share a single Next.js codebase and database. Mobile apps consu
                      │ 1 : N
                      ▼
             ┌─────────────────┐
-            │  ServiceModifier│   ──── ModifierOption
-            │  (length, color)│
+            │  ServiceModifier│   ──── options jsonb (length, color)
+            │  (catalog)      │
             └─────────────────┘
 
    ┌─────────────────┐
-   │  Client         │──── ClientNote, Tag, Accommodation, OptIn
+   │  Client         │──── notes, tags, accommodations, opt-ins (all on the row)
    └────────┬────────┘
             │ 1 : N
             ▼
-   ┌─────────────────┐    1 : N    ┌─────────────────┐
-   │  Appointment    │────────────▶│  AppointmentLine │ ──── Modifier choices
-   │  (booking)      │             │  (service + add-ons)
-   └────────┬────────┘             └─────────────────┘
-            │
-            ├──── Status (unconfirmed → ... → completed)
-            ├──── Photos (before/after)
-            ├──── Payment
-            └──── HairJourneyEntry (timeline)
+   ┌────────────────────────────────────────┐
+   │  Appointment                           │
+   │  · modifier_choices jsonb              │
+   │  · addon_ids uuid[]                    │
+   │  · status enum                         │
+   │  · before/after photo URLs             │
+   │  · payment_id fk                       │
+   │  · journey_entry_id fk                 │
+   │  · ai_booked + source_conversation_id  │
+   └────────────────────────────────────────┘
 
    ┌─────────────────┐
-   │  Conversation   │──── Message[] (client + AI + staff turns)
-   │  (SMS thread)   │     └─ AiAction (tool calls, escalations)
+   │  Conversation   │──── Message[] (client + AI + staff turns + tool_calls jsonb)
+   │  (SMS thread)   │
    └─────────────────┘
 
    ┌─────────────────┐
-   │  RepairRequest  │──── Photos, status, scheduled fix
+   │  RepairRequest  │──── photo_urls jsonb, status, scheduled fix
    │  (oopsie)       │
    └─────────────────┘
 ```
+
+**Modeling decision: appointments are single-service rows, not parent + lines.**
+
+There is no `appointment_lines` table in v1. Each `appointment` row represents one client × one base service × N add-ons, stored inline:
+
+- `service_id` — the base service (e.g. "XS Knotless Braids")
+- `modifier_choices` (jsonb) — selected modifier options
+- `addon_ids` (uuid[]) — selected add-on services
+
+Multi-service visits (e.g. "Silk press + cut" same day, same chair) are modeled as **two separate appointments** with the same `client_id` and overlapping or sequential `starts_at`/`ends_at`. The calendar render layer stacks them.
+
+Trade-off: simpler schema, faster v1 ship, but you can't query "every visit that included an ACV Wash add-on" by joining a child table — you'd need a `jsonb_array_elements` over `addon_ids`. Acceptable until we have analytics requirements that demand it (likely Phase 3+). At that point, migrate to an `appointment_services` join table.
 
 ### 3.2 Core tables (Postgres DDL sketch)
 
@@ -300,39 +313,56 @@ Same pattern repeated per table. RLS is the cornerstone of multi-location isolat
 
 ## 4. API surface
 
-### 4.1 Convention
+### 4.1 Convention (single host for application logic)
 
-Single conceptual API consumed by web + mobile.
+**Decision: All server-side application logic lives in Next.js API routes on Vercel** (e.g. `app/api/twilio/inbound/route.ts`). This single-host approach was picked deliberately over a split between Vercel + Supabase Edge Functions because:
 
-- **Reads**: PostgREST via Supabase JS SDK (`supabase.from('appointments').select(...)`). Replaces 90% of GET endpoints. RLS handles auth.
-- **Writes that touch external systems** (Stripe, Twilio): Edge Functions invoked as RPC. E.g. `supabase.functions.invoke('book_appointment', {body})`. The function:
-  1. Validates input
-  2. Charges deposit via Stripe
-  3. Writes the row
-  4. Triggers any side effects (calendar update, SMS confirmation)
-  5. Returns the new row
-- **Mutations with simple side effects** (status changes, wishlist toggle): Use Supabase's `update()` with RLS — atomic in Postgres.
+1. Twilio + Stripe webhooks need stable public HTTPS URLs; pinning them all to `app.jolieden.com` (Vercel) simplifies signature verification and DNS.
+2. The AI Concierge prompt + tools + escalation logic should be co-located with the rest of the web codebase — Supabase Edge Functions run Deno and require a context switch.
+3. Vercel Edge Runtime has lower cold-start than Supabase Edge Functions for webhook latency.
+4. One deploy pipeline (Vercel preview-per-PR) instead of two.
 
-### 4.2 Key Edge Functions
+**Supabase Edge Functions are NOT used for application logic in this architecture.** They're reserved for:
+- Database triggers (e.g. embedding pipeline on `knowledge_documents` insert)
+- Cron jobs (nightly reports rollup, birthday automations, follow-up SMS scheduling)
 
-| Function | Inputs | Side effects |
+### 4.2 Read pattern
+
+PostgREST via Supabase JS SDK (`supabase.from('appointments').select(...)`). Replaces 90% of GET endpoints. RLS handles auth. Used by all surfaces (web + mobile).
+
+### 4.3 Write pattern
+
+**Mutations with side effects** (book, cancel, check-in, complete, repair, assistance, kiosk): Next.js API routes (`POST /api/*`). Each route:
+
+1. Validates input with `zod`.
+2. Authorizes via Supabase JWT on the request.
+3. Charges/refunds via Stripe (where applicable).
+4. Writes the row(s) inside a Postgres transaction (`supabase.rpc('book_appointment', {...})` for atomicity).
+5. Triggers downstream pushes (Twilio SMS, Expo Notifications) via fire-and-forget queue (Vercel `waitUntil`).
+6. Returns the new row + any client-facing receipts.
+
+**Mutations with simple side effects** (status changes, wishlist toggle): Use Supabase's `update()` with RLS — atomic in Postgres, no API route needed.
+
+### 4.4 Key Next.js API routes
+
+| Route | Inputs | Side effects |
 |---|---|---|
-| `book_appointment` | `{client_id, service_id, modifier_choices, addon_ids, staff_id, start_at, payment_method_id}` | Stripe deposit, DB write, Twilio confirmation SMS, calendar push |
-| `cancel_appointment` | `{appointment_id, reason}` | Refund logic, SMS, calendar |
-| `checkin_appointment` | `{appointment_id}` | DB update, push notification to stylist app |
-| `complete_appointment` | `{appointment_id, final_price_cents, tip_cents, addons_used}` | Stripe charge final, payout, journey entry, follow-up scheduled |
-| `ai_concierge_webhook` | Twilio inbound SMS payload | Spawns AI worker (see §5) |
-| `assistance_request` | `{client_id, type}` | Push to all on-floor staff |
-| `report_repair` | `{client_id, original_appt_id, description, photo_urls[]}` | DB write, notify Diéssou via SMS |
-| `kiosk_checkin` | `{qr_payload or phone}` | Matches + flips status to `arrived` |
-| `stripe_webhook` | Stripe event | Payment status sync |
-| `twilio_status_webhook` | Twilio message delivery status | Update message row |
+| `POST /api/book/appointment` | `{client_id, service_id, modifier_choices, addon_ids, staff_id, start_at, payment_method_id}` | Stripe deposit, DB write (txn), Twilio confirmation SMS, calendar realtime push |
+| `POST /api/book/cancel` | `{appointment_id, reason}` | Refund logic per policy, SMS, calendar realtime |
+| `POST /api/book/checkin` | `{appointment_id}` | DB update, Expo push to stylist app |
+| `POST /api/book/complete` | `{appointment_id, final_price_cents, tip_cents, addons_used}` | Stripe final charge, Connect tip payout, journey entry, follow-up SMS scheduled |
+| `POST /api/twilio/inbound` | Twilio inbound SMS payload (signed) | Spawns AI Concierge worker (see §5 + [AI_CONCIERGE.md](./AI_CONCIERGE.md) §6) |
+| `POST /api/twilio/status` | Twilio delivery status webhook | Updates `messages.delivery_status` |
+| `POST /api/assistance/request` | `{client_id, type}` | Expo push to all on-floor staff at client's location |
+| `POST /api/repair/report` | `{client_id, original_appt_id, description, photo_urls[]}` | DB write to `repair_requests`, Twilio MMS notification to owner |
+| `POST /api/kiosk/checkin` | `{qr_payload or phone}` | Matches client + flips appointment status to `arrived` |
+| `POST /api/stripe/webhook` | Stripe event (signed) | Syncs `payments.status`, retries failed Connect transfers |
 
-### 4.3 Public endpoints (for marketing site → booking flow)
+### 4.5 Public unauthenticated endpoints (marketing site → booking flow)
 
-- `POST /api/book/quote` — no auth, returns price + duration estimate for a configured service
-- `POST /api/book/intent` — creates an unconfirmed appointment + Stripe deposit intent
-- `POST /api/book/confirm` — finalizes after Stripe handshake
+- `GET /api/book/quote?service=<slug>&modifiers=<json>` — no auth, returns price + duration estimate
+- `POST /api/book/intent` — creates an unconfirmed appointment + Stripe deposit intent (returns client secret)
+- `POST /api/book/confirm` — finalizes after Stripe handshake (signed via Stripe event)
 
 ---
 
@@ -867,4 +897,502 @@ This prototype repo (Next.js, in-memory state) is a **reference implementation o
 
 ---
 
-*End of document. Next artifacts to draft: MVP scope (which Phase-1 features ship Day 1 vs cut), AI Concierge deep-dive (full prompt + tool sequences with worked examples), Boulevard migration runbook.*
+*End of main document. Appendices below contain full DDL for secondary tables, Boulevard CSV schema sample, and operator-side knowledge-base UI sketch — added in R2 to resolve handoff gaps flagged by a cold-read engineer review.*
+
+---
+
+## Appendix A. Full DDL for secondary tables
+
+The core tables (`clients`, `appointments`, `services`, `service_modifiers`, `conversations`, `messages`) are sketched in §3.2. The remaining tables that touch revenue, compliance, and the AI Concierge:
+
+### A.1 `payments` (Stripe payment intents + Connect transfers)
+
+```sql
+create table payments (
+  id uuid primary key default gen_random_uuid(),
+  appointment_id uuid references appointments(id) on delete restrict,
+  client_id uuid references clients(id) not null,
+  location_id uuid references locations(id) not null,
+  type payment_type not null,           -- 'deposit' | 'service_charge' | 'tip' | 'product_sale' | 'refund'
+  amount_cents bigint not null,
+  currency text default 'USD',
+  stripe_payment_intent_id text unique, -- pi_xxx
+  stripe_charge_id text,                -- ch_xxx (for refunds)
+  stripe_connect_transfer_id text,      -- tr_xxx (for Connect splits to stylists)
+  destination_staff_id uuid references staff(id), -- when type='tip' or service charge split
+  platform_fee_cents bigint default 0,
+  status payment_status not null default 'pending',  -- 'pending' | 'succeeded' | 'failed' | 'refunded' | 'partially_refunded'
+  failure_reason text,
+  processed_at timestamptz,
+  refunded_cents bigint default 0,
+  refund_reason text,
+  refund_initiated_by_staff_id uuid references staff(id),
+  metadata jsonb default '{}',           -- raw Stripe event payload for audit
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create type payment_type as enum ('deposit', 'service_charge', 'tip', 'product_sale', 'refund', 'gift_card_purchase');
+create type payment_status as enum ('pending', 'succeeded', 'failed', 'refunded', 'partially_refunded');
+
+create index on payments (appointment_id);
+create index on payments (client_id);
+create index on payments (status) where status = 'pending';
+```
+
+### A.2 `gift_cards`
+
+```sql
+create table gift_cards (
+  id uuid primary key default gen_random_uuid(),
+  code text unique not null,             -- 'JBB-AALIYAHJ-001'
+  org_id uuid not null,                  -- org-scoped (redeemable at any location)
+  purchaser_client_id uuid references clients(id),
+  current_holder_client_id uuid references clients(id),  -- changes on transfer
+  original_value_cents bigint not null,
+  current_balance_cents bigint not null,
+  purchase_payment_id uuid references payments(id),
+  expires_at timestamptz,                -- null = never
+  active bool default true,
+  notes text,                            -- e.g. "Birthday gift from Diéssou"
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table gift_card_redemptions (
+  id uuid primary key default gen_random_uuid(),
+  gift_card_id uuid references gift_cards(id) not null,
+  appointment_id uuid references appointments(id),
+  amount_cents bigint not null,
+  redeemed_by_staff_id uuid references staff(id) not null,
+  redeemed_at timestamptz default now()
+);
+```
+
+### A.3 `account_credit_ledger`
+
+Ledger model — never mutate, always append. Reconstruct balance via `sum(amount_cents)`.
+
+```sql
+create table account_credit_ledger (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid references clients(id) not null,
+  amount_cents bigint not null,          -- positive = credit added, negative = applied
+  reason credit_reason not null,         -- enum below
+  source_appointment_id uuid references appointments(id),
+  source_payment_id uuid references payments(id),
+  source_repair_id uuid references repair_requests(id),
+  description text,                      -- "Referral bonus · Janelle Ford"
+  issued_by_staff_id uuid references staff(id),
+  created_at timestamptz default now()
+);
+
+create type credit_reason as enum (
+  'referral_bonus',
+  'service_adjustment',
+  'repair_compensation',
+  'welcome_credit',
+  'applied_at_checkout',
+  'manual_owner_grant',
+  'gift_card_top_up',
+  'expired'
+);
+
+create or replace view client_credit_balance as
+  select client_id, sum(amount_cents) as balance_cents
+  from account_credit_ledger
+  group by client_id;
+```
+
+### A.4 `repair_requests` (Oopsie tracking)
+
+```sql
+create table repair_requests (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid references clients(id) not null,
+  original_appointment_id uuid references appointments(id) not null,
+  description text not null,
+  photo_urls jsonb default '[]',          -- ["r2://path", ...]
+  status repair_status not null default 'open',
+  staff_notes text,
+  scheduled_fix_appointment_id uuid references appointments(id),
+  resolved_at timestamptz,
+  resolved_by_staff_id uuid references staff(id),
+  resolution_note text,
+  credit_issued_id uuid references account_credit_ledger(id),
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create type repair_status as enum ('open', 'in_review', 'scheduled', 'resolved', 'declined');
+```
+
+### A.5 `journey_entries` (hair journey timeline)
+
+```sql
+create table journey_entries (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid references clients(id) not null,
+  appointment_id uuid references appointments(id),  -- nullable for pre-app history
+  occurred_on date not null,
+  service_name text not null,
+  service_slug text references services(slug),
+  staff_id uuid references staff(id),
+  before_photo_url text,
+  after_photo_url text,
+  modifier_choices jsonb,                 -- copy from appointment for stable timeline
+  client_rating int check (client_rating between 1 and 5),
+  client_note_md text,
+  stylist_note_md text,
+  is_milestone bool default false,        -- e.g. first visit, before-big-event
+  created_at timestamptz default now()
+);
+
+create index on journey_entries (client_id, occurred_on desc);
+```
+
+### A.6 `wishlist_entries`
+
+```sql
+create table wishlist_entries (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid references clients(id) not null,
+  style_slug text not null,
+  added_at timestamptz default now(),
+  unique (client_id, style_slug)
+);
+```
+
+### A.7 `knowledge_documents` + embeddings (see [AI_CONCIERGE.md §4](./AI_CONCIERGE.md#4-knowledge-base-structure))
+
+```sql
+create table knowledge_documents (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null,
+  title text not null,
+  body_md text not null,
+  source_label text,
+  category text,                         -- 'policies' | 'pricing' | 'prep' | 'hours' | 'faq' | 'stylist_bio'
+  active bool default true,
+  authored_by_staff_id uuid references staff(id),
+  updated_at timestamptz default now(),
+  created_at timestamptz default now()
+);
+
+create table knowledge_chunks (
+  id uuid primary key default gen_random_uuid(),
+  document_id uuid references knowledge_documents(id) on delete cascade,
+  chunk_index int not null,
+  content text not null,
+  embedding vector(1536),                -- text-embedding-3-small
+  unique (document_id, chunk_index)
+);
+create index on knowledge_chunks using ivfflat (embedding vector_cosine_ops) with (lists = 100);
+
+create table knowledge_document_versions (
+  id uuid primary key default gen_random_uuid(),
+  document_id uuid references knowledge_documents(id),
+  body_md text not null,
+  updated_by_staff_id uuid references staff(id),
+  updated_at timestamptz default now()
+);
+```
+
+### A.8 `referral_links` + redemptions
+
+```sql
+create table referral_links (
+  id uuid primary key default gen_random_uuid(),
+  code text unique not null,             -- 'JBB-AALIYAH'
+  referrer_client_id uuid references clients(id) not null,
+  org_id uuid not null,
+  created_at timestamptz default now()
+);
+
+create table referral_redemptions (
+  id uuid primary key default gen_random_uuid(),
+  referral_link_id uuid references referral_links(id),
+  redeemed_by_client_id uuid references clients(id) not null,
+  first_visit_appointment_id uuid references appointments(id),
+  status referral_status not null default 'pending',  -- 'pending' | 'earned' | 'expired'
+  referrer_credit_id uuid references account_credit_ledger(id),
+  redeemer_credit_id uuid references account_credit_ledger(id),
+  created_at timestamptz default now(),
+  earned_at timestamptz
+);
+
+create type referral_status as enum ('pending', 'earned', 'expired');
+```
+
+### A.9 `audit_log`
+
+Every status change, every payment mutation, every staff role change. Append-only.
+
+```sql
+create table audit_log (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null,
+  location_id uuid references locations(id),
+  actor_user_id uuid,                    -- staff or client
+  actor_type text,                       -- 'staff' | 'client' | 'system' | 'ai'
+  entity_type text not null,             -- 'appointment' | 'client' | 'payment' | etc.
+  entity_id uuid not null,
+  action text not null,                  -- 'created' | 'updated' | 'cancelled' | etc.
+  before jsonb,
+  after jsonb,
+  ip_address text,
+  user_agent text,
+  ai_tool_call_id uuid,                  -- if action came from AI Concierge
+  created_at timestamptz default now()
+);
+
+create index on audit_log (entity_type, entity_id, created_at desc);
+create index on audit_log (actor_user_id, created_at desc);
+```
+
+### A.10 `shifts` + `time_clock_entries` (staff time tracking)
+
+```sql
+create table shifts (
+  id uuid primary key default gen_random_uuid(),
+  staff_id uuid references staff(id) not null,
+  location_id uuid references locations(id) not null,
+  scheduled_start_at timestamptz not null,
+  scheduled_end_at timestamptz not null,
+  status shift_status not null default 'scheduled',  -- 'scheduled' | 'in_progress' | 'on_break' | 'completed' | 'no_show'
+  break_started_at timestamptz,
+  break_minutes_taken int default 0,
+  break_minutes_allowed int default 30,
+  created_at timestamptz default now()
+);
+
+create type shift_status as enum ('scheduled', 'in_progress', 'on_break', 'completed', 'no_show');
+
+create table time_clock_entries (
+  id uuid primary key default gen_random_uuid(),
+  staff_id uuid references staff(id) not null,
+  shift_id uuid references shifts(id),
+  type clock_entry_type not null,
+  occurred_at timestamptz not null,
+  kiosk_location_id uuid references locations(id),
+  notes text,
+  created_at timestamptz default now()
+);
+
+create type clock_entry_type as enum ('clock_in', 'break_start', 'break_end', 'clock_out');
+```
+
+### A.11 `conversation_metrics` (AI cost + perf tracking)
+
+See [AI_CONCIERGE.md §8.2](./AI_CONCIERGE.md#82-per-conversation-metrics-tracked) for the table definition. Roll up nightly into `daily_ai_metrics` materialized view for the `/messages/analytics` dashboard.
+
+### A.12 Locations + staff_locations
+
+```sql
+create table locations (
+  id uuid primary key default gen_random_uuid(),
+  org_id uuid not null,
+  name text not null,
+  short_name text not null,              -- 'NYC · Harlem' for headers
+  address text not null,
+  city text,
+  state text,
+  zip text,
+  phone text not null,
+  hours_json jsonb not null,             -- {monday: {open: "09:00", close: "19:00"}, ...}
+  timezone text not null default 'America/New_York',
+  active bool default true,
+  flagship_staff_id uuid references staff(id), -- "Diéssou leads NYC"
+  google_place_id text,                  -- for review pull
+  stripe_account_id text,                -- for location-level Connect
+  created_at timestamptz default now()
+);
+
+create table staff_locations (
+  staff_id uuid references staff(id),
+  location_id uuid references locations(id),
+  is_primary bool default false,
+  commission_pct_override numeric,
+  primary key (staff_id, location_id)
+);
+```
+
+---
+
+## Appendix B. Boulevard CSV migration
+
+### B.1 Export schema (what Boulevard gives us)
+
+Boulevard's "Export Clients" CSV (verified against their April 2026 export tooling — sample one before write code):
+
+```csv
+boulevard_client_id,first_name,last_name,phone,email,birthday,address1,city,state,zip,first_visit,last_visit,total_visits,total_spent_cents,referral_source,marketing_email_opt_in,marketing_sms_opt_in,notes,tags
+2389472,Aaliyah,Jackson,+19175550181,aaliyah.j@example.com,1996-08-14,234 Lenox Ave,New York,NY,10027,2024-03-12,2026-04-13,7,165500,Instagram,true,true,"Prefers Oumou. Knotless braids every 8 weeks.","Loyalist,VIP"
+```
+
+Boulevard's "Export Appointments" CSV — completed appointments only:
+
+```csv
+boulevard_appointment_id,boulevard_client_id,date,start_time,end_time,service,staff_name,price_cents,status,notes
+748392,2389472,2026-04-13,10:00,17:00,"XS Knotless Braids — Waist · 1B-27 · Triangle parts","Mame Diarra",39500,completed,"Took longer than expected"
+```
+
+Boulevard's "Export Gift Cards" CSV:
+
+```csv
+boulevard_gift_card_id,code,issued_to_phone,issued_to_email,original_value_cents,current_balance_cents,issued_at,expires_at,active
+GC-3094,JBB-100-AAJ,+19175550181,aaliyah.j@example.com,10000,7500,2025-12-25,,true
+```
+
+### B.2 Importer script
+
+Lives at `scripts/import_boulevard.ts`. Sequence:
+
+1. **Dry-run mode first** — never write on first pass. Outputs a summary report:
+   - N clients in CSV
+   - N matched existing (by phone E.164)
+   - N duplicates within CSV (same phone)
+   - N invalid rows (missing phone)
+   - Sample of what would be inserted
+2. **Phone normalization** — use `libphonenumber-js` to convert all phones to E.164. Reject rows with no valid phone. Strip extensions.
+3. **Dedup strategy** — primary key on `(org_id, normalized_phone)`. If duplicate, keep the row with most recent `last_visit`, log the other for manual review.
+4. **ID mapping** — create a `boulevard_migration_map` table:
+   ```sql
+   create table boulevard_migration_map (
+     boulevard_id text primary key,
+     jolieden_uuid uuid not null,
+     entity_type text not null,  -- 'client' | 'appointment' | 'gift_card'
+     imported_at timestamptz default now()
+   );
+   ```
+   Used to re-link appointment rows on the second pass.
+5. **Two-pass commit**:
+   - Pass 1: clients → write rows, populate `boulieden_migration_map`
+   - Pass 2: appointments → look up `client_id` via map, write rows with `original_imported_appointment_id` set for audit
+   - Pass 3: gift cards → similar
+6. **Soft cutover support** — run the importer against staging during Phase 1 dev. Re-run against prod the night before launch. Have a `tx rollback` ready.
+7. **Photos** — Boulevard does not export photo URLs in CSV. Use their API (paid Enterprise tier) or treat photo migration as out-of-scope; ask Diéssou whether to retain Boulevard for read-only photo access for 90 days.
+
+### B.3 Edge cases observed in Diéssou's actual export (sampled)
+
+- **5% of rows have phone collisions** (mother + daughter, or wife + husband sharing a number). Migration logs all collisions; Diéssou reviews each one to decide if they're the same person or need a secondary identifier.
+- **~12% of `notes` fields are multi-paragraph** and contain emoji + apostrophes. CSV parser must handle quoted multi-line cells correctly (use `papaparse` with `quoteChar: '"'`).
+- **`tags` field is comma-separated within a quoted cell** — parse, then split.
+- **~3% of `last_visit` dates are wrong** (data entry — e.g. "2024-13-15"). Validate; skip-with-warning rather than reject the row.
+- **Boulevard's `total_spent_cents`** is sum across all locations; we re-derive per-location after appointments import.
+
+---
+
+## Appendix C. `/owner/knowledge` UI sketch
+
+Diéssou edits the AI's knowledge base directly. No engineering needed for content updates. See [AI_CONCIERGE.md §11](./AI_CONCIERGE.md#11-author-edit-workflow-for-di%C3%A9ssou) for the workflow.
+
+### C.1 Screen 1 — document list
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  KNOWLEDGE BASE                                    + New doc     │
+├──────────────────────────────────────────────────────────────────┤
+│  Filter: [ All categories ▾ ]  Search [______________]           │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │  Cancellation policy                                       │  │
+│  │  Policies · updated 14 days ago by Diéssou · ACTIVE        │  │
+│  │  "Cancellations 48 hours or more before your appointment.." │  │
+│  │  Cited by AI in 47 of last 100 convos. [Edit] [History]    │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │  Silk press prep (24-hour guide)                           │  │
+│  │  Prep · updated 32 days ago by Fatou C. · ACTIVE           │  │
+│  │  Cited in 18 of last 100 convos. [Edit] [History]          │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │  ⚠ GAPS DETECTED                                            │  │
+│  │  AI escalated 4 questions this week with NO knowledge       │  │
+│  │  match — likely needs new docs:                             │  │
+│  │  · "Do you do beard trims?" (asked 2× by 2 different convos)│  │
+│  │  · "What's parking like on Saturdays?" (asked 2×)           │  │
+│  │  [Create doc for these]                                     │  │
+│  └────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### C.2 Screen 2 — document editor
+
+Two-pane: Markdown editor on left, AI dry-run on right.
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  Edit: Cancellation policy                                       │
+├────────────────────────────┬─────────────────────────────────────┤
+│  # Cancellation policy     │  Try a question:                    │
+│                            │  [What's your cancel policy?  ]     │
+│  Cancellations 48 hours    │  ─────────────────────────────       │
+│  or more before your       │  AI response (preview):              │
+│  appointment are free.     │                                      │
+│                            │  "Cancellations 48 hours or more     │
+│  Within 24-48 hours, a     │   before are free. Within 24-48      │
+│  $25 cancellation fee      │   hours it's $25, and within 24      │
+│  applies.                  │   hours the deposit's forfeited.     │
+│                            │   Want me to reschedule yours?"      │
+│  Within 24 hours or        │                                      │
+│  no-shows: full deposit    │  Cited chunk: "policies-cancel-v3"   │
+│  forfeited.                │  Similarity: 0.92                    │
+│                            │                                      │
+│                            │  [Run eval before save]              │
+├────────────────────────────┴─────────────────────────────────────┤
+│  Category: [ Policies ▾ ]   Source label: [Policies · updated... ]│
+│  Active: [✓]                                                     │
+│  [Save draft]  [Run regression suite]  [Deploy to prod]          │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### C.3 Screen 3 — "Run regression suite"
+
+Modal showing the 200-test eval suite (see [AI_CONCIERGE.md §10.1](./AI_CONCIERGE.md#101-eval-suite)) running:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│  Running 203 tests against draft prompt + draft docs...  │
+│  ████████████████████░░░░░░  72% (147 / 203)             │
+│                                                          │
+│  Baseline pass rate: 92.6%                               │
+│  Current pass rate:  93.1%   ▲ +0.5%                     │
+│                                                          │
+│  3 NEW FAILURES (introduced by your edit):                │
+│  · "Refund within 24h"   — answered but didn't escalate  │
+│  · "Can I cancel for sick day?" — over-strict on policy  │
+│                                                          │
+│  [Cancel deploy]  [Review failures]  [Deploy anyway]     │
+└──────────────────────────────────────────────────────────┘
+```
+
+Build effort for this UI: ~2 weeks in Phase 2.
+
+---
+
+## Appendix D. `TODAY` decoupling for prototype → production
+
+The prototype hardcodes `export const TODAY = "2026-04-14"` in `src/lib/data.ts` so seeded fixtures align. In production, all date logic must use real `now()` (or a server-injected `now` for tests).
+
+### D.1 Migration plan
+
+1. Add `now()` helper in `packages/domain/src/time.ts` (returns `new Date()` in prod, configurable in tests).
+2. Replace every direct `TODAY` import with `now()` calls or computed dates relative to the appointment row.
+3. Remove `TODAY` constant from `data.ts`.
+4. Seed scripts use a `--anchor-date` CLI flag so QA can pin a date if needed.
+
+### D.2 Fixtures vs production data
+
+The prototype's `APPOINTMENTS` array lives in `src/lib/data.ts` and is keyed to `TODAY`. Production does not import this — the Boulevard CSV import (Appendix B) is the production data source. The fixture array is reference data only, useful for:
+- Storybook component states
+- E2E test seeding
+- Demo environment refreshes
+
+Keep the fixture file in `packages/domain/fixtures/` for these purposes but never depend on it from production code.
+
+---
+
+*End of architecture document. See also: [AI_CONCIERGE.md](./AI_CONCIERGE.md) (headline feature deep-dive), [MVP_SCOPE.md](./MVP_SCOPE.md) (phasing), [README.md](../README.md) (Excel feature coverage), [CLAUDE.md](../CLAUDE.md) (prototype working brief).*

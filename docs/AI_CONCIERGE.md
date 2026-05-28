@@ -440,15 +440,17 @@ Routing logic lives in an Edge Function `route_escalation` that:
 
 ### 6.1 Inbound message flow
 
+> **Host:** Twilio's webhook lands on a Next.js API route at `https://app.jolieden.com/api/twilio/inbound` (Vercel). All AI Concierge server logic lives there — see [ARCHITECTURE.md §4.1](./ARCHITECTURE.md#41-convention-single-host-for-application-logic) for why we picked Vercel API routes over Supabase Edge Functions for application logic.
+
 ```
 Client texts (646) 555-0100
    │
    ▼
 Twilio receives, POSTs to:
-  https://app.jolieden.com/api/twilio/inbound
+  https://app.jolieden.com/api/twilio/inbound  (Next.js API route)
    │
    ▼
-Edge Function ai_concierge_webhook:
+Route handler (the "AI worker"):
   1. Validate Twilio signature
   2. Find or create Conversation row (match by phone)
   3. Insert Message row (from="client")
