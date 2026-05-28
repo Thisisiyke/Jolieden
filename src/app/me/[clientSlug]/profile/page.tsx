@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Pencil, CreditCard, Gift, LogOut, ShieldCheck } from "lucide-react";
+import { ChevronRight, Pencil, CreditCard, Gift, LogOut, ShieldCheck, Trophy, Users } from "lucide-react";
 import { resolveClient, resolveStylist } from "@/lib/personas";
 import { TODAY } from "@/lib/data";
+import { pointsFor, tierFor } from "@/lib/rewards";
 
 function Avatar({ name, hue }: { name: string; hue?: number }) {
   const h = hue ?? 320;
@@ -106,6 +107,8 @@ export default async function ProfilePage({
   const memberSince = client.lastVisit
     ? new Date(client.lastVisit).getFullYear()
     : new Date(TODAY).getFullYear();
+  const points = pointsFor(client);
+  const tier = tierFor(client);
 
   return (
     <div className="space-y-5 px-4 py-5">
@@ -133,6 +136,17 @@ export default async function ProfilePage({
           <Pencil className="h-3.5 w-3.5" />
         </button>
       </section>
+
+      {/* Rewards summary — links to full screen */}
+      <Section title="Rewards & membership">
+        <Row
+          label={`${tier} member`}
+          value={`${points.toLocaleString("en-US")} pts`}
+          href={`/me/${client.slug}/rewards`}
+          trailing={<Trophy className="h-3.5 w-3.5 text-gold" />}
+        />
+        <Row label="Refer a friend" value="+100 pts each" href={`/me/${client.slug}/rewards`} trailing={<Users className="h-3.5 w-3.5 text-ink-400" />} />
+      </Section>
 
       {/* Contact */}
       <Section title="Contact">

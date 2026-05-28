@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Cake, Calendar, ChevronRight, RefreshCcw, Sparkles, Star } from "lucide-react";
+import { Cake, Calendar, ChevronRight, Gift, RefreshCcw, Sparkles, Star, Trophy } from "lucide-react";
 import {
   resolveClient,
   resolveStylist,
@@ -10,6 +10,7 @@ import {
 } from "@/lib/personas";
 import { CATEGORY_PALETTES } from "@/lib/gallery";
 import { TODAY, type Appointment, type Client } from "@/lib/data";
+import { pointsFor, tierFor, nextTierFor } from "@/lib/rewards";
 
 // ───────────────────── birthday helpers ─────────────────────
 
@@ -27,22 +28,90 @@ function daysUntilBirthday(client: Client, today: string): number | null {
 
 // ───────────────────── tile sub-components ─────────────────────
 
-function BirthdayHero({ daysAway }: { daysAway: number }) {
+function BirthdayHero({
+  daysAway,
+  tier,
+}: {
+  daysAway: number;
+  tier: string;
+}) {
+  const gifts: { label: string; sub?: string; redeemed?: boolean }[] = [
+    { label: "Comp Wash & Blow", sub: "Auto-applied to your booked visit" },
+    { label: "200 bonus points", sub: "Drops into your rewards 24h before your visit" },
+  ];
+  // Top tier gets the hand-written card too.
+  if (tier === "Platinum" || tier === "Gold") {
+    gifts.push({ label: "Hand-written card from Diéssou", sub: "Mailed to your address on file" });
+  }
+
   return (
     <section className="relative overflow-hidden rounded-2xl border border-gold/50 bg-gradient-to-br from-gold-soft via-paper to-brand-50 p-5">
       <div className="absolute right-4 top-4 text-gold/60">
         <Sparkles className="h-6 w-6" />
       </div>
       <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-brand">
-        <Cake className="h-3.5 w-3.5" /> Birthday week
+        <Cake className="h-3.5 w-3.5" /> Birthday week · {tier} tier
       </div>
       <h2 className="mt-2 font-serif text-2xl font-semibold text-brand">
         {daysAway === 0 ? "Happy birthday!" : daysAway === 1 ? "1 day away" : `${daysAway} days away`}
       </h2>
       <p className="mt-2 max-w-xs text-sm text-ink-700">
-        A complimentary Wash &amp; Blow has been added to your booked visit. We can&apos;t wait to spoil you.
+        Surprises waiting for you when you walk in. We can&apos;t wait to spoil you.
       </p>
+      <ul className="mt-4 space-y-2">
+        {gifts.map((g, i) => (
+          <li
+            key={i}
+            className="flex items-start gap-3 rounded-lg border border-gold/40 bg-white/70 p-2.5"
+          >
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gold/20 text-brand">
+              <Gift className="h-3.5 w-3.5" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-medium text-ink-900">{g.label}</div>
+              {g.sub && <div className="text-xs text-ink-500">{g.sub}</div>}
+            </div>
+          </li>
+        ))}
+      </ul>
     </section>
+  );
+}
+
+function RewardsCard({ client, slug }: { client: Client; slug: string }) {
+  const points = pointsFor(client);
+  const tier = tierFor(client);
+  const next = nextTierFor(client);
+  return (
+    <Link
+      href={`/me/${slug}/rewards`}
+      className="group block overflow-hidden rounded-2xl border border-ink-200 bg-gradient-to-br from-brand-50 to-paper hover:border-brand"
+    >
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white">
+          <Trophy className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+            {tier} member
+          </div>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-serif text-xl font-semibold text-brand tabular-nums">
+              {points.toLocaleString("en-US")}
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-wider text-ink-500">
+              points
+            </span>
+          </div>
+          {next && (
+            <div className="font-mono text-[10px] text-ink-500">
+              {next.pointsToGo} pts to {next.tier}
+            </div>
+          )}
+        </div>
+        <ChevronRight className="h-4 w-4 text-ink-300 group-hover:text-brand" />
+      </div>
+    </Link>
   );
 }
 
@@ -225,7 +294,9 @@ export default async function ClientHomePage({
       </header>
 
       {/* Birthday hero (only on the birthday persona) */}
-      {showBirthday && daysToBday !== null && <BirthdayHero daysAway={daysToBday} />}
+      {showBirthday && daysToBday !== null && (
+        <BirthdayHero daysAway={daysToBday} tier={tierFor(client)} />
+      )}
 
       {/* Upcoming appointment */}
       {nextAppt && (
@@ -241,6 +312,9 @@ export default async function ClientHomePage({
 
       {/* Cold-start: welcome + suggested */}
       {isColdStart && !lastCompleted && <ColdStartWelcome client={client} />}
+
+      {/* Rewards card — every persona */}
+      <RewardsCard client={client} slug={clientSlug} />
 
       {/* Hair journey preview */}
       <JourneyPreview clientSlug={clientSlug} />
