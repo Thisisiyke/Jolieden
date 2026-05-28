@@ -31,6 +31,11 @@ export type Appointment = {
   bookedBy?: string;
   bookedAt?: string;
   tags?: string[];
+  // Set when the AI Concierge autonomously booked this slot via SMS.
+  // Renders an "AI" badge on /calendar and lets /messages link the thread
+  // to the calendar event.
+  aiBooked?: boolean;
+  aiBookedFromThreadId?: string;
 };
 
 const hue = (n: number) => (n * 47) % 360;
@@ -162,9 +167,10 @@ export const APPOINTMENTS: Appointment[] = [
   mk({ date: YESTERDAY, client: "Chanel Morris", start: "3:15pm", end: "5:30pm", service: "Box Braids — Shoulder", staff: "Frederick Douglass", price: 180, status: "completed" }),
 
   // ---------- TOMORROW (Apr 15) ----------
-  mk({ date: TOMORROW, client: "Destiny Rivera", pronouns: "She/Her", start: "10:00am", end: "1:00pm", service: "Knotless Braids", staff: "Mame Diarra", price: 235, status: "unconfirmed", isNewClient: true }),
+  mk({ date: TOMORROW, client: "Destiny Rivera", pronouns: "She/Her", start: "10:00am", end: "1:00pm", service: "Knotless Braids", staff: "Mame Diarra", price: 235, status: "unconfirmed", isNewClient: true, aiBooked: true, aiBookedFromThreadId: "c-ai-1" }),
   mk({ date: TOMORROW, client: "Imani Webb", start: "2:00pm", end: "4:00pm", service: "Color Refresh", staff: "Naomi K.", price: 140, status: "confirmed" }),
-  mk({ date: TOMORROW, client: "Janelle Ford", pronouns: "She/Her", start: "5:00pm", end: "7:00pm", service: "Silk Press", staff: "Frederick Douglass", price: 145, status: "confirmed" }),
+  mk({ date: TOMORROW, client: "Janelle Ford", pronouns: "She/Her", start: "5:00pm", end: "7:00pm", service: "Silk Press", staff: "Frederick Douglass", price: 145, status: "confirmed", aiBooked: true, aiBookedFromThreadId: "c-ai-3" }),
+  mk({ date: TODAY, client: "Yvonne Adams", pronouns: "She/Her", start: "4:30pm", end: "6:00pm", service: "Wash & Style", staff: "Fatou Ciss", price: 95, status: "confirmed", aiBooked: true, aiBookedFromThreadId: "c-ai-4" }),
 
   // ---------- CAST DEMO APPOINTMENTS (for /me + /pro lifecycle demos) ----------
   // Aaliyah's 8-week rebook with her preferred stylist Oumou.
@@ -433,6 +439,26 @@ export const AUDIENCES: Audience[] = [
   { id: "a4", name: "Birthday — May", description: "May birthday celebrants", count: 5, filters: ["Birthday month is May"] },
 ];
 
+// AI Concierge metadata. Lives alongside the existing fields so the legacy
+// /messages list still renders; the new two-stack layout reads `aiState`
+// to decide whether a thread lives in "Needs you" or "AI handled."
+export type AiState = "needs-you" | "ai-handled" | "ai-replying";
+export type AiReason =
+  | "escalation"
+  | "complaint"
+  | "no-availability"
+  | "cancellation"
+  | "auto-reply"
+  | "auto-booking"
+  | "faq"
+  | "reminder";
+
+export type ConversationTurn = {
+  from: "client" | "ai" | "staff";
+  body: string;
+  ts?: string;
+};
+
 export type Conversation = {
   id: string;
   name: string;
@@ -440,23 +466,153 @@ export type Conversation = {
   time: string;
   unread?: boolean;
   status: "open" | "closed";
+  // — AI Concierge additions —
+  phone?: string;
+  aiState?: AiState;
+  aiReason?: AiReason;
+  // Short label for what the AI did, or why it escalated.
+  aiSummary?: string;
+  // If the AI committed a booking inside this thread, the appointment id.
+  bookingId?: string;
+  // Full transcript for the conversation pane. Mixed AI + client + staff.
+  transcript?: ConversationTurn[];
 };
 
 export const CONVERSATIONS: Conversation[] = [
-  { id: "c1", name: "Unknown", preview: "(347) 242-6515 — You have a new booking 💅 Mame Diarra", time: "1m", status: "open" },
-  { id: "c2", name: "Unknown", preview: "(917) 574-9063 — Hi, is there a charge when you place a hold?", time: "12m", status: "open" },
-  { id: "c3", name: "Otienno Njoku", preview: "(516) 887-7053 — Hi Otienno, your upcoming appointment...", time: "1h", status: "open" },
-  { id: "c4", name: "Lauren Rohe", preview: "Hi Lauren, your upcoming appointment is...", time: "1h", status: "open", unread: true },
-  { id: "c5", name: "Devorae Riney", preview: "(917) 663-4087 — Hi Devorae, your upcoming appointment...", time: "2h", status: "open" },
-  { id: "c6", name: "Nakeesha Coachman", preview: "(646) 240-9554 — Hi Nakeesha, your upcoming...", time: "2h", status: "open" },
-  { id: "c7", name: "Laurice Reels", preview: "(351) 555-7492 — Hi Laurice, your upcoming...", time: "3h", status: "open" },
-  { id: "c8", name: "Jennifer Martinez", preview: "(347) 555-1240 — Hi Jennifer, your upcoming...", time: "3h", status: "open" },
-  { id: "c9", name: "Lenora Codrington", preview: "(718) 805-9748 — Hi Lenora, your upcoming...", time: "4h", status: "open" },
-  { id: "c10", name: "Unknown", preview: "(347) 459-4096 — You have a new online booking 💅 Jenna L.", time: "5h", status: "open" },
-  { id: "c11", name: "Unknown", preview: "(917) 991-2024 — Your client has arrived 💜 Neysia", time: "5h", status: "open" },
-  { id: "c12", name: "Unknown", preview: "(929) 845-9923 — You have a new online booking 💅 Sewa S.", time: "6h", status: "open" },
-  { id: "c13", name: "Unknown", preview: "(929) 689-8329 — Your client has arrived 💜 Shay G.", time: "6h", status: "open" },
-  { id: "c14", name: "Unknown", preview: "(940) 217-1490 — You have a new online booking 💅 Juliana D.", time: "7h", status: "open" },
-  { id: "c15", name: "Unknown", preview: "(929) 398-9357 — Your client has cancelled 💔 Nandy M.", time: "8h", status: "open" },
-  { id: "c16", name: "Nandy Mompremier", preview: "(347) 555-1003 — Hi Nandy, your appointment at Jolieden's...", time: "9h", status: "open" },
+  // ───────── AI Concierge showcase threads (pinned to the top) ─────────
+  {
+    id: "c-ai-1",
+    name: "Destiny Rivera",
+    phone: "(929) 555-0388",
+    preview: "AI booked Knotless · Apr 15 10am with Mame Diarra",
+    time: "just now",
+    status: "open",
+    aiState: "ai-handled",
+    aiReason: "auto-booking",
+    aiSummary: "First-time client. AI proposed slots, she confirmed, booked.",
+    bookingId: "a26",
+    transcript: [
+      { from: "client", body: "hi! i'd love to book knotless braids for tomorrow if anyone's available 🙏", ts: "10:42a" },
+      { from: "ai", body: "Hi Destiny! Welcome to Jolieden. I see Mame Diarra has 10am open tomorrow (Apr 15) for medium knotless — 3hrs, $235. Want me to lock it in?", ts: "10:42a" },
+      { from: "client", body: "yes please!", ts: "10:43a" },
+      { from: "ai", body: "Booked! 📅 Sat Apr 15 · 10am with Mame Diarra · Medium Knotless · $235. $25 deposit auto-applied. I'll text you a reminder 24h before. Anything else?", ts: "10:43a" },
+      { from: "client", body: "perfect, ty!!", ts: "10:43a" },
+    ],
+  },
+  {
+    id: "c-ai-2",
+    name: "Aaliyah Jackson",
+    phone: "(917) 555-0181",
+    preview: "AI is replying… (Aaliyah is texting about her rebook)",
+    time: "now",
+    status: "open",
+    aiState: "ai-replying",
+    aiReason: "auto-booking",
+    aiSummary: "Mid-thread. AI is reading Aaliyah's history to propose Oumou's next opening.",
+    transcript: [
+      { from: "client", body: "hey it's aaliyah! i'm due for my knotless again, can I get oumou next sat?", ts: "10:51a" },
+      { from: "ai", body: "Hi Aaliyah! Checking Oumou's calendar now — one sec…", ts: "10:51a" },
+    ],
+  },
+  {
+    id: "c-ai-3",
+    name: "Janelle Ford",
+    phone: "(347) 555-0921",
+    preview: "AI booked Silk Press · Apr 15 5pm with Frederick",
+    time: "32m",
+    status: "open",
+    aiState: "ai-handled",
+    aiReason: "auto-booking",
+    aiSummary: "Returning client. Confirmed her usual silk press at her usual time.",
+    bookingId: "a27",
+    transcript: [
+      { from: "client", body: "any silk press slots open tomorrow evening?", ts: "10:18a" },
+      { from: "ai", body: "Hi Janelle! Frederick has 5pm open tomorrow — same time as your last 3 visits. Lock it?", ts: "10:18a" },
+      { from: "client", body: "yes please", ts: "10:19a" },
+      { from: "ai", body: "Booked: Apr 15 · 5pm with Frederick Douglass · Silk Press · $145. See you tomorrow! ✨", ts: "10:19a" },
+    ],
+  },
+  {
+    id: "c-ai-4",
+    name: "Yvonne Adams",
+    phone: "(646) 555-0710",
+    preview: "AI booked Wash & Style · today 4:30pm",
+    time: "1h",
+    status: "open",
+    aiState: "ai-handled",
+    aiReason: "auto-booking",
+    aiSummary: "Same-day request. AI found Fatou's 4:30 gap, booked.",
+    bookingId: "a28",
+    transcript: [
+      { from: "client", body: "any chance i can squeeze in a wash and style today after work? around 5?", ts: "9:38a" },
+      { from: "ai", body: "Yes — Fatou has 4:30pm open today. Wash & Style runs ~90 min. Want me to grab it?", ts: "9:39a" },
+      { from: "client", body: "yes pls!", ts: "9:39a" },
+      { from: "ai", body: "Booked: today · 4:30pm with Fatou Ciss · Wash & Style · $95. See you soon! 💜", ts: "9:39a" },
+    ],
+  },
+  {
+    id: "c-ai-5",
+    name: "Imani Webb",
+    phone: "(646) 555-0199",
+    preview: "AI escalated · box dye + balayage question",
+    time: "18m",
+    status: "open",
+    aiState: "needs-you",
+    aiReason: "escalation",
+    aiSummary: "Custom color question — AI handed off to Dieynaba for a strand-test plan.",
+    transcript: [
+      { from: "client", body: "i do box dye at home every month. will that mess up the balayage with dieynaba next week?", ts: "10:32a" },
+      { from: "ai", body: "Great question to ask before color! Box dye buildup can affect lift. Let me get Dieynaba directly so she can plan with you.", ts: "10:32a" },
+      { from: "ai", body: "Looping her in now — one sec.", ts: "10:33a" },
+    ],
+  },
+  {
+    id: "c-ai-6",
+    name: "Tahirah Patrick",
+    phone: "(347) 555-0612",
+    preview: "Wants refund for last visit · sentiment flagged",
+    time: "26m",
+    status: "open",
+    aiState: "needs-you",
+    aiReason: "complaint",
+    aiSummary: "Negative sentiment + refund request. AI surfaced for human review.",
+    transcript: [
+      { from: "client", body: "im really upset about my last appointment. my braids unraveled in 3 days and ive been ignored", ts: "10:24a" },
+      { from: "ai", body: "I'm so sorry, Tahirah. This needs Diéssou's attention directly — she'll personally reply within an hour. Your last visit details are in front of her now.", ts: "10:24a" },
+    ],
+  },
+  {
+    id: "c-ai-7",
+    name: "Mariana Lopez",
+    phone: "(929) 555-0204",
+    preview: "Wants Sat 10am · all booked",
+    time: "44m",
+    status: "open",
+    aiState: "needs-you",
+    aiReason: "no-availability",
+    aiSummary: "Saturday 10am request — no stylist available. AI offered waitlist; she wants to talk to staff.",
+    transcript: [
+      { from: "client", body: "i need to book saturday 10am for a silk press, my flight is at 2", ts: "10:06a" },
+      { from: "ai", body: "Saturday 10am is fully booked. Closest options: Sat 9am with Adja, Fri 4pm with Naomi K., or join the waitlist for Sat 10am.", ts: "10:06a" },
+      { from: "client", body: "none work, can i talk to someone?", ts: "10:08a" },
+    ],
+  },
+
+  // ───────── Existing system + reminder threads (carried over) ─────────
+  { id: "c1", name: "Unknown", preview: "(347) 242-6515 — You have a new booking 💅 Mame Diarra", time: "1m", status: "open", aiState: "ai-handled", aiReason: "auto-reply", aiSummary: "System notification — no client response needed." },
+  { id: "c2", name: "Unknown", phone: "(917) 574-9063", preview: "(917) 574-9063 — Hi, is there a charge when you place a hold?", time: "12m", status: "open", aiState: "ai-handled", aiReason: "faq", aiSummary: "AI answered: $25 deposit, refundable 48h+ in advance." },
+  { id: "c3", name: "Otienno Njoku", preview: "(516) 887-7053 — Hi Otienno, your upcoming appointment...", time: "1h", status: "open", aiState: "ai-handled", aiReason: "reminder", aiSummary: "24-hour reminder sent." },
+  { id: "c4", name: "Lauren Rohe", preview: "Hi Lauren, your upcoming appointment is...", time: "1h", status: "open", unread: true, aiState: "ai-handled", aiReason: "reminder", aiSummary: "Reminder sent." },
+  { id: "c5", name: "Devorae Riney", preview: "(917) 663-4087 — Hi Devorae, your upcoming appointment...", time: "2h", status: "open", aiState: "ai-handled", aiReason: "reminder" },
+  { id: "c6", name: "Nakeesha Coachman", preview: "(646) 240-9554 — Hi Nakeesha, your upcoming...", time: "2h", status: "open", aiState: "ai-handled", aiReason: "reminder" },
+  { id: "c7", name: "Laurice Reels", preview: "(351) 555-7492 — Hi Laurice, your upcoming...", time: "3h", status: "open", aiState: "ai-handled", aiReason: "reminder" },
+  { id: "c8", name: "Jennifer Martinez", preview: "(347) 555-1240 — Hi Jennifer, your upcoming...", time: "3h", status: "open", aiState: "ai-handled", aiReason: "reminder" },
+  { id: "c9", name: "Lenora Codrington", preview: "(718) 805-9748 — Hi Lenora, your upcoming...", time: "4h", status: "open", aiState: "ai-handled", aiReason: "reminder" },
+  { id: "c10", name: "Unknown", preview: "(347) 459-4096 — You have a new online booking 💅 Jenna L.", time: "5h", status: "open", aiState: "ai-handled", aiReason: "auto-reply" },
+  { id: "c11", name: "Unknown", preview: "(917) 991-2024 — Your client has arrived 💜 Neysia", time: "5h", status: "open", aiState: "ai-handled", aiReason: "auto-reply" },
+  { id: "c12", name: "Unknown", preview: "(929) 845-9923 — You have a new online booking 💅 Sewa S.", time: "6h", status: "open", aiState: "ai-handled", aiReason: "auto-reply" },
+  { id: "c13", name: "Unknown", preview: "(929) 689-8329 — Your client has arrived 💜 Shay G.", time: "6h", status: "open", aiState: "ai-handled", aiReason: "auto-reply" },
+  { id: "c14", name: "Unknown", preview: "(940) 217-1490 — You have a new online booking 💅 Juliana D.", time: "7h", status: "open", aiState: "ai-handled", aiReason: "auto-reply" },
+  { id: "c15", name: "Unknown", preview: "(929) 398-9357 — Your client has cancelled 💔 Nandy M.", time: "8h", status: "open", aiState: "needs-you", aiReason: "cancellation", aiSummary: "Cancellation within 24h — penalty review needed." },
+  { id: "c16", name: "Nandy Mompremier", preview: "(347) 555-1003 — Hi Nandy, your appointment at Jolieden's...", time: "9h", status: "open", aiState: "ai-handled", aiReason: "reminder" },
 ];

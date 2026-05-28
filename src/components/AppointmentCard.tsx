@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar } from "./Avatar";
-import { Heart, MessageCircle, Sparkles } from "lucide-react";
+import { Heart, MessageCircle, Sparkles, Bot } from "lucide-react";
 import type { Appointment } from "../lib/data";
 
 export function AppointmentCard({
@@ -26,12 +26,23 @@ export function AppointmentCard({
       onDragStart={onDragStart}
       onClick={onClick}
       className={
-        "w-full text-left rounded-md border bg-white px-2.5 py-2 flex items-start gap-2 shadow-sm transition " +
+        "relative w-full text-left rounded-md border bg-white px-2.5 py-2 flex items-start gap-2 shadow-sm transition " +
         (selected
           ? "border-brand ring-2 ring-brand/20"
           : "border-ink-200 hover:border-ink-300 hover:shadow")
       }
     >
+      {/* AI Concierge badge — top-right corner. Marks appointments the AI
+          autonomously booked over SMS. Tiny so it doesn't crowd the card. */}
+      {appt.aiBooked && (
+        <span
+          className="absolute -right-1 -top-1 z-10 flex h-4 items-center gap-0.5 rounded-full bg-brand px-1 py-0.5 font-mono text-[8px] uppercase tracking-wider text-white shadow"
+          title="Booked by AI Concierge"
+        >
+          <Bot className="h-2.5 w-2.5" />
+          AI
+        </span>
+      )}
       <Avatar name={appt.client} hue={appt.avatarHue} />
       <div className="min-w-0 flex-1 leading-tight">
         <div className="text-[11px] text-ink-500">{timeText}</div>
