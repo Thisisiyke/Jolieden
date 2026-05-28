@@ -139,7 +139,7 @@ const bookTiles = (clients: { coldStart?: Client; loyalist?: Client; birthday?: 
     });
   }
   out.push({
-    href: "/book/gallery",
+    href: "/book",
     badge: { label: "Browse", tone: "cold" },
     title: "Anonymous — just browsing",
     description: "Visitor without intent yet. Explore the gallery, filter by category, see prices. Identify only at checkout.",

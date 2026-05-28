@@ -320,3 +320,40 @@ export const servicesByCategory = (slug: CategorySlug): CatalogService[] =>
 
 export const popularServices = (): CatalogService[] =>
   CATALOG_SERVICES.filter((s) => s.popular);
+
+// ───────────────────── pricing ─────────────────────
+
+// Resolve effective price + duration from a service + modifier choices + add-on ids.
+// Modifier choices are { modifierId → optionId }. Unknown options are ignored.
+export function computePricing(
+  serviceSlug: string,
+  modifierChoices: Record<string, string> = {},
+  addOnIds: string[] = [],
+): { price: number; durationMin: number } {
+  const svc = getService(serviceSlug);
+  if (!svc) return { price: 0, durationMin: 0 };
+  let price = svc.basePrice;
+  let durationMin = svc.baseDurationMin;
+  for (const mod of svc.modifiers ?? []) {
+    const optId = modifierChoices[mod.id];
+    if (!optId) continue;
+    const opt = mod.options.find((o) => o.id === optId);
+    if (!opt) continue;
+    price += opt.deltaPrice ?? 0;
+    durationMin += opt.deltaDurationMin ?? 0;
+  }
+  for (const addOnId of addOnIds) {
+    const addOn = (svc.addOns ?? []).find((a) => a.id === addOnId);
+    if (!addOn) continue;
+    price += addOn.price;
+    durationMin += addOn.durationMin;
+  }
+  return { price, durationMin };
+}
+
+export const formatDuration = (mins: number): string => {
+  if (mins < 60) return `${mins}m`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+};
