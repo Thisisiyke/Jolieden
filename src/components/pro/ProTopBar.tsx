@@ -1,15 +1,15 @@
-// Top bar for the /pro stylist app. Shows the stylist, role, and a quick
-// shift-status pill (on the clock / on break / off).
+// iOS-style navigation bar for /pro. Slightly stronger brand tint than /me
+// to differentiate the stylist app, with shift-status pill on the right.
 
 import Link from "next/link";
-import { ArrowLeft, Circle } from "lucide-react";
+import { ChevronLeft, Circle } from "lucide-react";
 import type { Stylist } from "@/lib/data";
 
 type Props = { stylist: Stylist; shiftStatus?: "on" | "break" | "off" };
 
-const STATUS_LABELS: Record<NonNullable<Props["shiftStatus"]>, string> = {
-  on: "On the clock",
-  break: "On break",
+const STATUS_LABEL: Record<NonNullable<Props["shiftStatus"]>, string> = {
+  on: "On",
+  break: "Break",
   off: "Off",
 };
 
@@ -21,25 +21,22 @@ const STATUS_DOT: Record<NonNullable<Props["shiftStatus"]>, string> = {
 
 export default function ProTopBar({ stylist, shiftStatus = "on" }: Props) {
   return (
-    <header className="sticky top-0 z-20 flex h-12 items-center justify-between gap-3 border-b border-ink-200 bg-brand text-white px-4">
+    <header className="flex h-11 shrink-0 items-center justify-between gap-3 px-4">
       <Link
         href="/demo"
-        className="flex items-center gap-1 text-white/70 hover:text-white"
+        className="-ml-1 flex items-center gap-0.5 text-brand hover:text-brand-700"
         aria-label="Back to Demo Hub"
       >
-        <ArrowLeft className="h-4 w-4" />
-        <span className="font-mono text-[10px] uppercase tracking-wider">Demo</span>
+        <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
+        <span className="text-sm font-medium">Demo</span>
       </Link>
-      <div className="min-w-0 flex-1 text-center">
-        <div className="truncate text-sm font-semibold">{stylist.name}</div>
-        <div className="truncate font-mono text-[9px] uppercase tracking-wider text-white/70">
-          {stylist.specialty || stylist.role}
-        </div>
+      <div className="min-w-0 text-center font-serif text-[13px] tracking-[0.16em] text-ink-900">
+        {stylist.name.split(" ")[0].toUpperCase()}
       </div>
-      <div className="flex items-center gap-1.5 rounded-full bg-white/10 px-2 py-1">
-        <Circle className={"h-2 w-2 " + STATUS_DOT[shiftStatus]} />
-        <span className="font-mono text-[10px] uppercase tracking-wider">
-          {STATUS_LABELS[shiftStatus]}
+      <div className="flex shrink-0 items-center gap-1 rounded-full bg-paper-mute px-2 py-0.5">
+        <Circle className={"h-1.5 w-1.5 " + STATUS_DOT[shiftStatus]} />
+        <span className="font-mono text-[9px] uppercase tracking-wider text-ink-700">
+          {STATUS_LABEL[shiftStatus]}
         </span>
       </div>
     </header>

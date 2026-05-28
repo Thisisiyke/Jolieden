@@ -1,35 +1,32 @@
-// Top bar for the /me client app. Shows the active persona, brand wordmark,
-// and notifications bell. Lives inside the mobile shell.
+// iOS-style navigation bar for /me. Compact, with a back-to-demo link and
+// notification bell. Each page renders its own large title underneath.
 
 import Link from "next/link";
-import { Bell, ArrowLeft } from "lucide-react";
+import { Bell, ChevronLeft } from "lucide-react";
 import type { Client } from "@/lib/data";
 
 type Props = { client: Client; unreadCount?: number };
 
 export default function MeTopBar({ client, unreadCount = 0 }: Props) {
   return (
-    <header className="sticky top-0 z-20 flex h-12 items-center justify-between gap-3 border-b border-ink-200 bg-white px-4">
+    <header className="flex h-11 shrink-0 items-center justify-between gap-3 px-4">
       <Link
         href="/demo"
-        className="flex items-center gap-1 text-ink-500 hover:text-brand"
+        className="-ml-1 flex items-center gap-0.5 text-brand hover:text-brand-700"
         aria-label="Back to Demo Hub"
       >
-        <ArrowLeft className="h-4 w-4" />
-        <span className="font-mono text-[10px] uppercase tracking-wider">Demo</span>
+        <ChevronLeft className="h-5 w-5" strokeWidth={2.5} />
+        <span className="text-sm font-medium">Demo</span>
       </Link>
-      <div className="flex-1 text-center">
-        <div className="font-serif text-sm tracking-[0.18em] text-brand">JOLIEDEN</div>
-        <div className="font-mono text-[9px] uppercase tracking-wider text-ink-500">
-          hi, {client.firstName}
-        </div>
+      <div className="font-serif text-[13px] tracking-[0.18em] text-ink-900">
+        {client.firstName.toUpperCase()}
       </div>
       <button
         type="button"
         aria-label="Notifications"
-        className="relative flex h-8 w-8 items-center justify-center rounded-full text-ink-700 hover:bg-paper"
+        className="relative -mr-1 flex h-8 w-8 items-center justify-center rounded-full text-brand hover:bg-paper"
       >
-        <Bell className="h-4 w-4" />
+        <Bell className="h-[18px] w-[18px]" strokeWidth={2.2} />
         {unreadCount > 0 && (
           <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-brand" />
         )}

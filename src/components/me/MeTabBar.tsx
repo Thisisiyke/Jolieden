@@ -25,7 +25,7 @@ export default function MeTabBar({ clientSlug }: Props) {
   return (
     <nav
       aria-label="Client app tabs"
-      className="sticky bottom-0 left-0 right-0 z-30 border-t border-ink-200 bg-white pb-[env(safe-area-inset-bottom)]"
+      className="z-30 shrink-0 border-t border-ink-200 bg-white pb-[max(env(safe-area-inset-bottom),0.5rem)] sm:pb-6"
     >
       <ul className="grid grid-cols-5">
         {TABS.map((t) => {

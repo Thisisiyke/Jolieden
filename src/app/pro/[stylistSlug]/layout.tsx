@@ -1,6 +1,6 @@
-// /pro/[stylistSlug] shell — the stylist mobile app wrapper. Phone frame on
-// desktop, full-width on mobile. Top bar (with shift status) + scrollable
-// body + bottom tab bar.
+// /pro/[stylistSlug] shell — the stylist mobile app wrapper. iPhone frame
+// on desktop, full-width on mobile. iOS-style nav bar (with shift status) +
+// scrollable body + bottom tab bar.
 
 import { notFound } from "next/navigation";
 import { resolveStylist } from "@/lib/personas";
@@ -25,7 +25,7 @@ export default async function ProShell({
   return (
     <MobileFrame>
       <ProTopBar stylist={stylist} />
-      <div className="flex-1 overflow-y-auto bg-paper">{children}</div>
+      <main className="min-h-0 flex-1 overflow-y-auto bg-paper">{children}</main>
       <ProTabBar stylistSlug={stylistSlug} inboxBadge={inboxBadge} />
     </MobileFrame>
   );

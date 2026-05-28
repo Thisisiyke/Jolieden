@@ -1,5 +1,6 @@
-// /me/[clientSlug] shell — the client mobile app wrapper. Phone frame on
-// desktop, full-width on mobile. Top bar + scrollable body + bottom tab bar.
+// /me/[clientSlug] shell — the client mobile app wrapper. iPhone frame on
+// desktop, full-width on mobile. iOS-style nav bar + scrollable body +
+// bottom tab bar all sized to fill the phone screen.
 
 import { notFound } from "next/navigation";
 import { resolveClient } from "@/lib/personas";
@@ -20,8 +21,8 @@ export default async function MeShell({
 
   return (
     <MobileFrame>
-      <MeTopBar client={client} />
-      <div className="flex-1 overflow-y-auto bg-paper">{children}</div>
+      <MeTopBar client={client} unreadCount={2} />
+      <main className="min-h-0 flex-1 overflow-y-auto bg-paper">{children}</main>
       <MeTabBar clientSlug={clientSlug} />
     </MobileFrame>
   );
