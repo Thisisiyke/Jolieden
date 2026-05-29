@@ -138,12 +138,36 @@ export default function CommentsWidget() {
         body: JSON.stringify({ author: author || "anonymous", body, page: pathname }),
       });
       if (!res.ok) {
-        const txt = await res.text();
+        await res.text();
         setError(`Couldn't post (${res.status})`);
         return;
       }
+      // GitHub's Issues LIST endpoint is eventually consistent — a freshly
+      // created Issue doesn't always appear in subsequent list calls for
+      // several seconds. Our POST response already contains the new
+      // comment, so optimistically prepend it. We still fire fetchComments
+      // in the background to reconcile if other comments arrived
+      // concurrently from another window.
+      try {
+        const data = (await res.json()) as { comment?: Comment };
+        if (data?.comment) {
+          setComments((prev) =>
+            prev.some((c) => c.id === data.comment!.id)
+              ? prev
+              : [data.comment!, ...prev],
+          );
+        }
+      } catch {
+        /* ignore parse errors — fetchComments will reconcile */
+      }
       setBody("");
-      await fetchComments();
+      // Fire-and-forget background refresh after a short delay — gives
+      // GitHub's list endpoint time to index, and reconciles if anyone
+      // else commented in parallel. Failure is non-fatal because the
+      // optimistic insert already showed the user their own post.
+      window.setTimeout(() => {
+        fetchComments();
+      }, 1500);
     } catch {
       setError("Network error");
     } finally {
