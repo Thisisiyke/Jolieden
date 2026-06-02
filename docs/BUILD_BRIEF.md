@@ -1,15 +1,15 @@
-# Jolieden Beauty Bar — Build Brief
+# Jolieden — Build Brief
 
-> **Start here.** This is the single source of truth for the production build of Jolieden Beauty Bar. If a teammate hands you this file, you can find every other doc, the visual reference, the contract, and the open questions from it.
+> **Start here.** This is the single source of truth for the production build of Jolieden. If a teammate hands you this file, you can find every other doc, the visual reference, the contract, and the open questions from it.
 
 ---
 
 ## 0 · TL;DR
 
 - **What:** Replace Jolieden's Boulevard booking widget with a custom software platform. 7 surfaces, dual admin model (Owner + Manager), per-station kiosks, AI SMS Concierge, multi-location data architecture.
-- **Who:** Built by **AmbittMedia** for **JOLIEDEN Beauty Bar** (Diéssou Kante, Owner). Delivery scope, milestones, and commercials are managed by AmbittMedia under a separate engagement letter — not in this brief.
+- **Who:** Built by **AmbittMedia** for **Jolieden** (Diéssou Kante, Owner). Delivery scope, milestones, and commercials are managed by AmbittMedia under a separate engagement letter — not in this brief.
 - **When:** Kickoff **June 15, 2026** → Final acceptance **February 15, 2027** (9 months). 5 milestones.
-- **Where:** Production-stable web + iOS + Android. Primary location is **Jolieden Harlem** (2510 Lenox Ave). Built multi-location from day one.
+- **Where:** Production-stable web + iOS + Android. Primary location is **Jolieden — Harlem** (2510 Lenox Ave). Built multi-location from day one.
 
 ---
 
@@ -130,7 +130,7 @@ Catalog Shoot (Phase 2) is acknowledged as a separate, optional engagement — p
 - **Hosting:** Vercel for web + APIs. Database on Supabase. Domains via Diéssou's existing registrar
 - **CI/CD:** GitHub Actions → Vercel preview deploys per PR; main → production
 - **Monitoring:** Vercel Analytics + Sentry for error tracking; PostHog for product analytics (consent-gated)
-- **Mobile distribution:** App Store + Play under **Jolieden Beauty Bar** developer accounts (Diéssou owns)
+- **Mobile distribution:** App Store + Play under **Jolieden** developer accounts (Diéssou owns)
 
 ---
 
@@ -217,7 +217,7 @@ Per Exhibit A.4 of the contract:
 - **Names:** Title case in storage. Don't auto-correct.
 - **Languages:** EN default; FR added in M5 to the Stylist app. Other surfaces TBD (open question).
 - **Emojis in copy:** Diéssou's voice uses 💛 sparingly. Don't over-emoji.
-- **Branding:** **JOLIEDEN Beauty Bar** in titles. **Diéssou Kante** as Owner.
+- **Branding:** **Jolieden** in titles. **Diéssou Kante** as Owner.
 - **The "Influencer" framing for stylists is intentional** — preserves her brand voice. Don't quietly rename to "Stylist" without permission.
 
 ---

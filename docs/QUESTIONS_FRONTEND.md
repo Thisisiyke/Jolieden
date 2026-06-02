@@ -1,6 +1,6 @@
 # Frontend Build Questions
 
-> Pre-kickoff questionnaire for **Jolieden Beauty Bar** (AmbittMedia × Jolieden engagement, June 15, 2026). Compiled from a read of all seven surface mockups (`site.html`, `client.html`, `kiosk.html`, `stylist.html`, `owner.html`, `manager.html`, `shoot.html`), Exhibit A of the contract, and `docs/ARCHITECTURE.md` / `docs/PRODUCT_SPEC.md`. Goal: surface every yes/no decision the product/design team needs to make before the dev team starts cutting tickets.
+> Pre-kickoff questionnaire for **Jolieden** (AmbittMedia × Jolieden engagement, June 15, 2026). Compiled from a read of all seven surface mockups (`site.html`, `client.html`, `kiosk.html`, `stylist.html`, `owner.html`, `manager.html`, `shoot.html`), Exhibit A of the contract, and `docs/ARCHITECTURE.md` / `docs/PRODUCT_SPEC.md`. Goal: surface every yes/no decision the product/design team needs to make before the dev team starts cutting tickets.
 
 Each surface has its own H2. Categories under each surface group questions by **states**, **animations**, **responsive**, **accessibility**, **errors / edge cases**, **forms / validation**, **i18n**, **reuse**, **platform**, **dead ends**, and **conflicts**. Skip categories that don't apply.
 

@@ -1,4 +1,4 @@
-# Data Model — Jolieden Beauty Bar
+# Data Model — Jolieden
 
 **Scope:** Single locked schema covering all 7 surfaces (booking site, client app, kiosk, stylist app, owner admin, manager admin, catalog shoot). Postgres-flavored DDL. Multi-tenant from day one via `location_id`.
 
@@ -41,7 +41,7 @@
 ```sql
 CREATE TABLE locations (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  name             text NOT NULL,                       -- "Jolieden Harlem"
+  name             text NOT NULL,                       -- "Jolieden — Harlem"
   slug             text NOT NULL UNIQUE,                -- "harlem"
   timezone         text NOT NULL,                       -- "America/New_York"
   street_address   text NOT NULL,
