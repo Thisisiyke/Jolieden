@@ -7,9 +7,8 @@
 ## 0 · TL;DR
 
 - **What:** Replace Jolieden's Boulevard booking widget with a custom software platform. 7 surfaces, dual admin model (Owner + Manager), per-station kiosks, AI SMS Concierge, multi-location data architecture.
-- **Who:** Built by **KufGroup LLC d/b/a AmbittMedia** (Kyle Kufuor, CEO) for **JOLIEDEN Beauty Bar** (Diéssou Kante, Owner). Lead delivery sub: Valere (via Upwork).
+- **Who:** Built by **AmbittMedia** for **JOLIEDEN Beauty Bar** (Diéssou Kante, Owner). Delivery scope, milestones, and commercials are managed by AmbittMedia under a separate engagement letter — not in this brief.
 - **When:** Kickoff **June 15, 2026** → Final acceptance **February 15, 2027** (9 months). 5 milestones.
-- **How much:** Fixed-fee **$170,000 USD**, 9 monthly installments via Wave, billed by ACH.
 - **Where:** Production-stable web + iOS + Android. Primary location is **Jolieden Harlem** (2510 Lenox Ave). Built multi-location from day one.
 
 ---
@@ -113,7 +112,7 @@ See the contract PDF's Exhibit A page or the artifact's hub for the canonical pa
 | **M4** | Jan 31, 2027 | Companion mobile apps (Client + Stylist, iOS + Android beta on TestFlight + Play internal track) + station kiosk software ready for hardware install | Beta builds delivered to Diéssou for internal testing in Harlem |
 | **M5** | Feb 15, 2027 | Final acceptance: production-stable, Severity 1+2 defects cleared, EN/FR toggle shipped in Stylist app | Diéssou signs off on M5 acceptance form; final payment due |
 
-Catalog Shoot (Phase 2) is acknowledged as a separate, optional engagement — production logistics out of scope under the $170k.
+Catalog Shoot (Phase 2) is acknowledged as a separate, optional engagement — production logistics out of base scope.
 
 ---
 

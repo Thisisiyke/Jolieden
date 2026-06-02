@@ -132,7 +132,7 @@
 | # | Question | Why |
 |---|---|---|
 | 9.1 | **Timeline.** The "October Lookbook" — which October? **2026?** This affects whether we can build it before launch or do it after M3. | |
-| 9.2 | **In or out of $170k.** Per the contract, the **production logistics** (studio, photographer, influencer comp, image releases) are **out of scope** under the Total Fee. Confirm. | |
+| 9.2 | **In or out of base scope.** Per the contract, the **production logistics** (studio, photographer, influencer comp, image releases) are **out of scope** under the base engagement. Confirm. | |
 | 9.3 | **Software for the shoot.** Do you want us to build a small **shoot-ops tool** (signups, claim-a-look, image release intake, asset upload, look mapping)? If yes, that's a Phase 2 add-on we'd quote separately. | |
 | 9.4 | **Influencer recruitment.** Who recruits influencers — you, an agency, social outreach? | |
 | 9.5 | **Image release.** Do you have a release form already, or do we draft? Signed digitally at the kiosk? | |

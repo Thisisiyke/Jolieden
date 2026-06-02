@@ -289,21 +289,11 @@ The 2-engineer estimate below assumes this split. **Confirm with the dev shop / 
 - Separate iOS / Android engineers — RN + Expo means one mobile eng covers both.
 - Separate QA engineer in Phase 1 — leads + mids self-test via the test pyramid (§12.5 in ARCHITECTURE.md). Add a dedicated QA in Phase 3.
 
-## Budget anchors (rough)
+## Budget anchors
 
-For the team above:
+Internal — managed by AmbittMedia. Not in this dev brief.
 
-| Phase | Duration | Engineering cost | Infra/services cost |
-|---|---|---|---|
-| 0. Foundation | 4 wk | $48k | $1k (Supabase setup, Stripe onboarding) |
-| 1. Day-1 cutover | 16 wk | $192k | $4k (initial Twilio, Stripe, hosting) |
-| 2. AI + mobile | 12 wk | $144k | $8k (Anthropic ramp, Apple Dev, EAS) |
-| 3. Multi-location + premium | 12 wk | $144k | $5k (extra Supabase, more Twilio) |
-| **Total (10 months)** | **~44 wk** | **~$528k** | **~$18k** |
-
-Plus ongoing infra at ~$3k/yr per location for hosting + services (Twilio scales with SMS volume).
-
-Numbers assume $1,200/eng/wk fully-loaded (W2 + benefits at mid US market rate). Offshore or contractor pricing could halve this; FAANG-level US-only could double it.
+Ongoing infra is roughly $3k/yr per location for hosting + services (Twilio scales with SMS volume); this is a Client pass-through per the engagement letter, not Service Provider revenue.
 
 ---
 

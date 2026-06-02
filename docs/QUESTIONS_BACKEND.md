@@ -715,7 +715,7 @@ Many UI affordances in the mockups don't have a defined backend behavior. Each n
 
 ## 18. Catalog Shoot (Phase 2 add-on) — re-call out
 
-Per contract §A.6, Phase 2 is acknowledged but **not in scope** for the $170k base fee. Technical integration is in scope; production logistics are out. Still, scoping questions:
+Per contract §A.6, Phase 2 is acknowledged but **not in scope** for the base engagement. Technical integration is in scope; production logistics are out. Still, scoping questions:
 
 - Does the M1–M5 work include placeholder image hosting / gallery seeding tools that will receive the shoot output?
 - Image release tool: built in M1–M5 or quoted separately?

@@ -1,6 +1,6 @@
 # Frontend Build Questions
 
-> Pre-kickoff questionnaire for **Jolieden Beauty Bar** (KufGroup × Jolieden MSA, June 15, 2026). Compiled from a read of all seven surface mockups (`site.html`, `client.html`, `kiosk.html`, `stylist.html`, `owner.html`, `manager.html`, `shoot.html`), Exhibit A of the contract, and `docs/ARCHITECTURE.md` / `docs/PRODUCT_SPEC.md`. Goal: surface every yes/no decision the product/design team needs to make before the dev team starts cutting tickets.
+> Pre-kickoff questionnaire for **Jolieden Beauty Bar** (AmbittMedia × Jolieden engagement, June 15, 2026). Compiled from a read of all seven surface mockups (`site.html`, `client.html`, `kiosk.html`, `stylist.html`, `owner.html`, `manager.html`, `shoot.html`), Exhibit A of the contract, and `docs/ARCHITECTURE.md` / `docs/PRODUCT_SPEC.md`. Goal: surface every yes/no decision the product/design team needs to make before the dev team starts cutting tickets.
 
 Each surface has its own H2. Categories under each surface group questions by **states**, **animations**, **responsive**, **accessibility**, **errors / edge cases**, **forms / validation**, **i18n**, **reuse**, **platform**, **dead ends**, and **conflicts**. Skip categories that don't apply.
 
@@ -599,7 +599,7 @@ This is a one-time **internal planning document** rather than a shipping product
 
 - What's the staging environment URL we'll use for client review, and who has access?
 - Demo data: do we keep the prototype's named personas (Diéssou, Amara, Aminata, Zainab, etc.) or seed with synthetic data?
-- App Store / Play Store accounts: under Jolieden's developer accounts or KufGroup's, with later transfer?
+- App Store / Play Store accounts: under Jolieden's developer accounts or AmbittMedia's, with later transfer?
 - Privacy policy & terms of service — owned and drafted by Diéssou's counsel, or do we provide a template?
 - COPPA / minors: "Kids" category exists — do we need parental consent flow if a 12-year-old has a booking?
 - HIPAA / scalp-condition data: hair profile notes mention "tender-headed" / "sensitive scalp" — does this count as health data?

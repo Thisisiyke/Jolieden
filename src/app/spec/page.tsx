@@ -146,9 +146,9 @@ export default function BuildBriefHome() {
           Seven product surfaces, dual admin model, AI SMS Concierge, multi-location ready.
         </p>
 
-        {/* Project facts strip */}
-        <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
-          <Fact label="Total fee" value="$170,000" sub="9 monthly payments via Wave" />
+        {/* Project facts strip — commercials live in AmbittMedia's
+            engagement letter, not this dev-facing brief. */}
+        <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-3">
           <Fact label="Kickoff" value="Jun 15, 2026" sub="9-month build" />
           <Fact label="Final acceptance" value="Feb 15, 2027" sub="5 milestones · M1 → M5" />
           <Fact label="Surfaces" value="7" sub="Site · Client · Kiosk · Stylist · Owner · Manager · Shoot" />
@@ -172,9 +172,9 @@ export default function BuildBriefHome() {
             <div>
               <h2 className="font-serif text-xl font-bold text-[#1E1F4D]">Who&apos;s building</h2>
               <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                Built by KufGroup LLC (d/b/a <span className="font-semibold">AmbittMedia</span>) under
-                contract with JOLIEDEN Beauty Bar. Lead delivery sub via Upwork. Final acceptance and
-                IP assignment fire at full payment per Exhibit A.
+                Built by <span className="font-semibold">AmbittMedia</span> under engagement with
+                JOLIEDEN Beauty Bar. Delivery team includes AmbittMedia engineering + a lead
+                delivery partner. IP assigns to Client per the engagement letter on final acceptance.
               </p>
             </div>
             <div>
@@ -295,7 +295,7 @@ export default function BuildBriefHome() {
           <ol className="mt-5 space-y-3 text-sm text-slate-600">
             <li className="flex gap-3">
               <span className="font-mono font-bold text-emerald-600">✓</span>
-              Contract signed (KufGroup LLC ↔ JOLIEDEN, $170k / 9 months)
+              Engagement letter signed · 9-month build
             </li>
             <li className="flex gap-3">
               <span className="font-mono font-bold text-emerald-600">✓</span>
@@ -344,7 +344,7 @@ export default function BuildBriefHome() {
                 AmbittMedia
               </div>
               <p className="mt-2 max-w-md text-xs text-slate-400">
-                KufGroup LLC d/b/a AmbittMedia · Texas LLC · kylekufuor@gmail.com · (539) 444-6517
+                AmbittMedia · ambittmedia.com · Dallas, TX
               </p>
             </div>
             <div className="flex flex-col gap-1 text-xs">
