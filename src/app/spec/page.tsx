@@ -100,13 +100,13 @@ const docs: DocCard[] = [
 ];
 
 const surfaces = [
+  { name: "Empty States Reference", href: "/states", desc: "What each surface looks like with no data — copy + CTA rules" },
   { name: "Booking Website", href: "/book", desc: "Anonymous · photo-first · Boulevard replacement" },
   { name: "Client Companion App", href: "/me", desc: "Logged-in mobile · journey, rewards, bookings" },
   { name: "Station Kiosk", href: "/kiosk", desc: "Per-chair tablet · check-in · live progress mirror" },
   { name: "Stylist App", href: "/pro", desc: "Schedule · capture · earnings · EN/FR toggle" },
   { name: "Owner Admin", href: "/owner", desc: "Strategy · goals · revenue · register" },
   { name: "Front Desk (legacy demo)", href: "/front-desk", desc: "Original prototype's operator view" },
-  { name: "Demo hub (persona walkthrough)", href: "/demo", desc: "Persona-driven prototype walkthrough" },
 ];
 
 export default function BuildBriefHome() {
