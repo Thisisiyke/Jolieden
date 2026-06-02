@@ -27,7 +27,9 @@ const NAV = [
 ];
 
 // Routes that render their own chrome (no operator TopNav).
-const HIDE_ON_PREFIXES = ["/demo", "/book", "/me", "/pro", "/kiosk", "/onboarding"];
+// "/" was added when the homepage became Diéssou's full-window artifact
+// (the operator TopNav belongs on the legacy Front Desk at /front-desk).
+const HIDE_ON_PREFIXES = ["/", "/demo", "/book", "/me", "/pro", "/kiosk", "/onboarding", "/spec"];
 
 export function TopNav() {
   const pathname = usePathname();
